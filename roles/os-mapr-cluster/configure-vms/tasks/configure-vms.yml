@@ -1,0 +1,59 @@
+
+# Don't delegate to Ansible (doesn't work for OSSP, FIP network isn't open on ansible OSPP)
+- name: Openstack | Wait for public ip
+  delegate_to: localhost
+  wait_for: port=22 host="{{ ansible_host }}"
+
+# Don't delegate to Ansible (doesn't work for OSSP, FIP network isn't open on ansible OSPP)
+- name: Openstack | Dirty hack !! Wait for sshd reboot
+  delegate_to: localhost
+  wait_for: port=22 host="{{ ansible_host }}" delay=20
+
+# Don't delegate to Ansible (doesn't work for OSSP, FIP network isn't open on ansible OSPP)
+- name: Openstack | Disable administrators SSH Keys for user root
+  delegate_to: localhost
+  remote_user: centos
+  authorized_key: user=root key="{{ lookup('file', '{{ inventory_dir }}/../common_vars/ssh-keys/root/enabled/ansible')}}" manage_dir=yes state=absent
+
+- name: Openstack |Enable administrators SSH Keys for admin users
+  remote_user: centos
+  authorized_key: user=root key="{{ lookup('file', item )}}" manage_dir=yes
+  with_fileglob:
+    - '{{ inventory_dir }}/../common_vars/ssh-keys/root/enabled/*'
+  become: yes
+
+- name: Openstack | Disabled SSH Keys for admin users
+  remote_user: centos
+  authorized_key: user=root key="{{ lookup('file', item )}}" manage_dir=yes
+  with_fileglob:
+    - '{{ inventory_dir }}/../common_vars/ssh-keys/root/disabled/*'
+  become: yes
+
+- name: Openstack | Configure Yum.conf
+  template: src=etc_yum.conf.j2 dest=/etc/yum.conf owner=root group=root mode=0755
+
+- name: Remove Official repo for Pulp
+  file: path="/etc/yum.repos.d/{{ item.repo }}" state=absent
+  with_items:
+    - repo: "CentOS-CR.repo"
+    - repo: "CentOS-Debuginfo.repo"
+    - repo: "CentOS-fasttrack.repo"
+    - repo: "CentOS-Media.repo"
+    - repo: "CentOS-Sources.repo"
+    - repo: "CentOS-Vault.repo"
+    - repo: "CentOS-Base.repo"
+    - repo: "epel.repo"
+    - repo: "CentOS-fasttrack.repo"
+  when: "{{ not yum_with_proxy }}"
+
+- name: Add Centos Repo
+  template:
+    src: "{{ item.src }}"
+    dest: "/etc/yum.repos.d/{{ item.dest }}"
+    owner: root
+    group: root
+    mode: 0644
+  with_items:
+    - { src: "etc_yum.repos.d_CentOS6-Base.repo.j2", dest: "CentOS-Base.repo" }
+    - { src: "etc_yum.repos.d_CentOS6-Epel.repo.j2", dest: "epel.repo" }
+  when: "{{ not yum_with_proxy }}"

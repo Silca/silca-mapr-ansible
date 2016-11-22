@@ -1,0 +1,10 @@
+vault_crypted_mapr_password: mapr
+vault_crypted_luigi_password: luigi
+
+vault_ldap_bind_password : Roonahdau3
+
+# Password initial - NE PAS CHANGER -
+vault_initial_ssl_stores_password: zefo9Ushie
+
+# Password si certificats officiels - Peut être curstomisé
+vault_ssl_stores_password: aaJuk3niNg

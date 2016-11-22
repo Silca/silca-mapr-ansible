@@ -1,0 +1,46 @@
+# {{ ansible_managed  }}
+
+global
+    log         127.0.0.1 local2
+
+    chroot      /var/lib/haproxy
+    pidfile     /var/run/haproxy.pid
+    maxconn     4000
+    user        haproxy
+    group       haproxy
+    daemon
+
+    # turn on stats unix socket
+    stats socket /var/lib/haproxy/stats level admin
+
+userlist users
+	user admin insecure-password {{ vault_ha_admin_password }}
+	user kibana insecure-password {{ vault_ha_kibana_password }}
+	user elastic insecure-password {{ vault_ha_elastic_password }}
+
+defaults
+    mode http
+    option  httplog
+    option  dontlognull
+    option  redispatch
+    retries 3
+    log global
+    stats enable
+    balance roundrobin
+    option httpclose
+    option forwardfor
+    option allbackups
+    timeout connect  10s
+    timeout client  28800s
+    timeout server  28800s
+
+
+listen stats :{{ ha_proxy.admin_port }}
+    mode http
+    stats enable
+    stats hide-version
+    stats realm Haproxy\ Statistics
+    stats uri /
+    stats auth admin:{{ vault_ha_admin_password }}
+
+

@@ -1,0 +1,77 @@
+- name: MapR | Hadoop | Configure core-site
+  blockinfile:
+    dest: "/opt/mapr/hadoop/hadoop-{{ mapr_hadoop_version }}/etc/hadoop/core-site.xml"
+    marker: "<!-- {mark} ANSIBLE MANAGED BLOCK for doAs (impersonation) -->"
+    insertafter: "<configuration>"
+    block: |
+      <property>
+        <name>hadoop.proxyuser.mapr.hosts</name>
+        <value>*</value>
+      </property>
+      <property>
+        <name>hadoop.proxyuser.mapr.groups</name>
+        <value>*</value>
+      </property>
+  notify: Restart Warden
+
+- name: MapR | Hadoop | Get Disk info from Mapr
+  command: maprcli disk list -host {{ inventory_hostname }} -system 0 -json
+  register: diskinfos
+
+
+- set_fact:
+     mapr_disk: "{{ diskinfos.stdout | from_json }}"
+
+- name: MapR | Hadoop | Configure mapred site
+  blockinfile:
+    dest: "/opt/mapr/hadoop/hadoop-{{ mapr_hadoop_version }}/etc/hadoop/mapred-site.xml"
+    marker: "<!-- {mark} ANSIBLE MANAGED BLOCK for yarn -->"
+    insertbefore: "</configuration>"
+    block: |
+      <property>
+       <name>mapreduce.reduce.disk</name>
+        <value>{{ [ 0.5, mapr_disk.total / ansible_processor_vcpus] | min }}</value>
+      </property>
+  notify: Restart Warden
+
+- name: MapR | Configure Yarn Log Aggregation | Check if the /yarnlogs volume exists
+  stat: path=/mapr/{{ mapr.cluster_name }}/yarnlogs
+  register: nfsyarnlogsvolume
+  ignore_errors: true
+
+- name: MapR | Configure Yarn Log Aggregation | Create the /yarnlogs volume
+  command: |
+    maprcli volume create
+      -name yarnlogs
+      -path /yarnlogs
+      -replication 2
+      -minreplication 1
+      -quota 200G
+  become_user: mapr
+  become: true
+  run_once: true
+  when: nfsyarnlogsvolume.stat.islnk is not defined
+
+- name: MapR | Configure Yarn Log Aggregation | Parametrage des droits du point de montage /yarnlogs
+  command: hadoop fs -chmod 777 /yarnlogs
+
+- name: MapR | Configure Yarn Log Aggregation | yarn-env.sh
+  lineinfile: dest=/opt/mapr/hadoop/hadoop-{{mapr_hadoop_version}}/etc/hadoop/yarn-env.sh regexp="MAPR_IMPERSONATION_ENABLED" line="export MAPR_IMPERSONATION_ENABLED=1"
+  when : "{{ inventory_hostname in groups['mapr-nodemanager'] }}"
+
+- name: MapR | Configure Yarn Log Aggregation | yarn-site.xml
+  blockinfile:
+      dest: "/opt/mapr/hadoop/hadoop-{{ mapr_hadoop_version }}/etc/hadoop/yarn-site.xml"
+      marker: "<!-- {mark} ANSIBLE MANAGED BLOCK for yarn -->"
+      insertbefore: "</configuration>"
+      block: |
+         <property>
+         <name>yarn.log-aggregation-enable</name>
+            <value>true</value>
+         </property>
+         <property>
+         <name>yarn.nodemanager.remote-app-log-dir</name>
+            <value>/yarnlogs</value>
+         </property>
+  when : "{{ inventory_hostname in groups['mapr-nodemanager'] }}"
+  notify: Restart Warden

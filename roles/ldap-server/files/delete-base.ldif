@@ -1,0 +1,18 @@
+
+dn: uid=maprtest,ou=People,ou=mapr,o=test
+changetype: delete
+
+dn: ou=People,ou=mapr,o=test
+changetype: delete
+
+dn: ou=Netgroup,ou=mapr,o=test
+changetype: delete
+
+dn: ou=Group,ou=mapr,o=test
+changetype: delete
+
+dn: ou=profile,ou=mapr,o=test
+changetype: delete
+
+dn: ou=mapr,o=test
+changetype: delete

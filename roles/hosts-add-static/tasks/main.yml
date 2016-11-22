@@ -1,0 +1,14 @@
+- name: Manage Hosts | Install liselinux python for deactivate by Ansible selinux
+  package: pkg={{ item }}
+  with_items:
+    - libselinux-python
+  tags: package
+
+- name: "Manage Hosts  | Add static host: {{ static_hosts }}"
+  lineinfile:
+    dest: /etc/hosts
+    regexp: '.*{{ item.name }}$'
+    line: "{{ item.ip }} {{ item.name }}"
+    state: present
+  with_items: "{{ static_hosts }}"
+  when: "{{ static_hosts is defined }}"

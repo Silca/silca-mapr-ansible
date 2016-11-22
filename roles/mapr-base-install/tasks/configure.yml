@@ -1,0 +1,11 @@
+- name: Mapr | Configure bashrc
+  lineinfile: dest=/opt/mapr/conf/env.sh regexp="{{ item.begin }}" line="{{ item.line }}" insertafter=yes
+  with_items:
+    - { begin: "export JAVA_HOME", line: "export JAVA_HOME=/usr/lib/jvm/java" }
+    - { begin: "export MAPR_SUBNETS", line: "export MAPR_SUBNETS={{ mapr.subnet }}" }
+
+- name: MapR | Configure.sh
+  command: /opt/mapr/server/configure.sh -C {{ cldb.urls }} -Z {{ zookeeper.urls }} -HS {{ historyserver.urls }} -N {{ mapr.cluster_name }} --isvm
+
+- name: MapR | Disk Setup
+  command: /opt/mapr/server/disksetup -F /tmp/disks.txt creates=/opt/mapr/conf/disktab

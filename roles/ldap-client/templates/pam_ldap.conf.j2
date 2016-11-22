@@ -1,0 +1,28 @@
+# {{ ansible_managed }}
+
+# base de recherche
+base ou={{ ldap_dn_ou }},o={{ ldap_dn_o }}
+
+# uri
+uri {{ ldap_server_protocol }}://{{ ldap_server_name }}:{{ ldap_server_port }}/
+
+# compte de connexion
+binddn cn=lda_root_account,ou=profile,ou={{ ldap_bind_dn_ou }},o={{ ldap_bind_dn_o }}
+
+
+# mot de passe du compte de connexion
+bindpw {{ vault_ldap_bind_password }}
+
+# port de l'instance
+port {{ ldap_server_port }}
+
+# ou
+nss_base_passwd         ou=People,ou={{ ldap_dn_ou }},o={{ ldap_dn_o }}
+nss_base_shadow         ou=People,ou={{ ldap_dn_ou }},o={{ ldap_dn_o }}
+nss_base_group          ou=Group,ou={{ ldap_dn_ou }},o={{ ldap_dn_o }}
+nss_base_netgroup       ou=Netgroup,ou={{ ldap_dn_ou }},o={{ ldap_dn_o }}
+
+# Certificats
+ssl on
+tls_cacertdir /etc/openldap/cacerts
+pam_password clear 

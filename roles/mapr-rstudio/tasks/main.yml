@@ -1,0 +1,61 @@
+- name: MapR | R Studio Server |  Download RStudio Server
+  command: wget -O /tmp/rstudio-server.rpm https://download2.rstudio.org/rstudio-server-rhel-{{ rstudio_server_version }}-x86_64.rpm creates="/tmp/rstudio-server.rpm"
+  environment:
+    https_proxy: "{{ https_proxy }}"
+  when: "platform in ('local', 'lxc')"
+
+- name: Droit sur rstudio
+  file: path=/tmp/rstudio-server.rpm mode=0777
+  when: "platform in ('local', 'lxc')"
+
+- name: MapR | R Studio Server |  Install RStudio Server
+  yum: name="/tmp/rstudio-server.rpm" state=present
+  when: "platform in ('local', 'lxc')"
+  notify: Restart Warden
+  tags: package
+
+- name: MapR | R Studio Server |  Install RStudio Server from Pulp
+  package: pkg="rstudio-server-{{ rstudio_server_version }}-*" state=latest
+  when: "platform not in ('local', 'lxc')"
+  notify: Restart Warden
+  tags: package
+
+- name: MapR | R Studio Server |  Install RStudio Server from Pulp
+  template: src=etc_rstudio_rserver.conf.j2 dest=/etc/rstudio/rserver.conf owner=root
+
+- name: MapR | R Studio Server |  Create user group
+  group: name={{ rstudio_user_group }} state=present
+
+- name: MapR | R Studio Server |  Add Mapr to rstudio server group
+  user: append=true name=mapr groups={{ rstudio_user_group }}
+
+- name: MapR | R Studio Server |  Templatize warden_rstudio_initscript initscript for warden
+  template:
+    src: warden_rstudio_initscript.sh.j2
+    dest: /usr/lib/rstudio-server/extras/warden_rstudio_initscript.sh
+    owner: root
+    mode: "u=rx,g=rx,o=rx"
+  notify: Restart Warden
+
+- name: MapR | R Studio Server |  Templatize warden_rstudio_initscript initscript for warden
+  template:
+    src: warden_rstudio_initscript.sh.j2
+    dest: /usr/lib/rstudio-server/extras/warden_rstudio_initscript.sh
+    owner: root
+    mode: "u=rx,g=rx,o=rx"
+  notify: Restart Warden
+
+- name: MapR | R Studio Server |  Configure pam.d for rstudio and ldap
+  template:
+    src: etc_map.d_rstudio.j2
+    dest: /etc/pam.d/rstudio
+  notify: Restart Warden
+  when: "{{ use_ldap }}"
+
+- name: MapR | R Studio Server |  Templatize Warden script for R Studio Server
+  template:
+    src: warden.rstudio.conf.j2
+    dest: /opt/mapr/conf/conf.d/warden.rstudio.conf
+    owner: mapr
+    mode: "u=rw,g=r,o=r"
+  notify: Restart Warden

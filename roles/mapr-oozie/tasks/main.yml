@@ -1,0 +1,72 @@
+
+- name: MapR | Oozie | Installation Oozie
+  package: pkg=mapr-oozie-{{ mapr_oozie_version }}* state=latest
+  tags: package
+
+- name: MapR | Oozie | Configure non-secure cluster
+  blockinfile:
+    dest: "/opt/mapr/oozie/oozie-{{ mapr_oozie_version }}/conf/oozie-site.xml"
+    marker: "<!-- {mark} ANSIBLE MANAGED BLOCK for Oozie jdbc and impersonnation -->"
+    insertafter: "<configuration>"
+    block: |
+        <property>
+                <name>oozie.service.ProxyUserService.proxyuser.mapr.hosts</name>
+                <value>*</value>
+        </property>
+
+        <property>
+                <name>oozie.service.ProxyUserService.proxyuser.mapr.groups</name>
+                <value>*</value>
+        </property>
+
+        <property>
+            <name>oozie.service.JPAService.jdbc.driver</name>
+            <value>com.mysql.jdbc.Driver</value>
+            <description>JDBC driver class.</description>
+        </property>
+
+        <property>
+            <name>oozie.service.JPAService.jdbc.url</name>
+            <value>jdbc:mysql://{{ groups['mapr-ha-node'][0] }}:{{ ha_proxy.mysql_port }}/{{ oozie.db_name }}?autoReconnect=true&amp;interactiveClient=true</value>
+            <description>JDBC URL.</description>
+        </property>
+
+        <property>
+            <name>oozie.service.JPAService.jdbc.username</name>
+            <value>{{ oozie.db_user }}</value>
+            <description>DB user name. </description>
+        </property>
+
+        <property>
+            <name>oozie.service.JPAService.jdbc.password</name>
+            <value>{{ oozie.db_passwd }}</value>
+            <description>
+                DB user password.
+                IMPORTANT: if password is emtpy leave a 1 space string, the service trims the value,
+                if empty Configuration assumes it is NULL.
+            </description>
+        </property>
+
+- name: MapR | Oozie | Copy mysql connector
+  command: cp /opt/mapr/lib/mysql-connector-java-5.1.25.jar /opt/mapr/oozie/oozie-{{ mapr_oozie_version }}/libext/ creates=/opt/mapr/oozie/oozie-{{ mapr_oozie_version }}/libext/mysql-connector-java-5.1.25.jar
+
+- name: MapR | Reconfigure.sh due to Oozie installation
+  command: /opt/mapr/server/configure.sh -R
+  notify: Restart Warden
+
+- meta: flush_handlers
+
+- name: MapR | Oozie | Wait for Oozie port
+  wait_for: port={{ oozie.web_port }}
+  when: "{{ groups['mapr-oozie'] | length == 1 }}"
+
+- name: MapR | Oozie | Configure bashrc
+  lineinfile: dest=/etc/profile regexp="^export OOZIE_URL" line="export OOZIE_URL='http://{{ inventory_hostname }}:{{ oozie.web_port }}/oozie'"
+  when: "{{ groups['mapr-oozie'] | length == 1 }}"
+
+- name: MapR | Oozie | Check if /oozie/share/lib is not empty
+  command: ls /mapr/{{ mapr.cluster_name }}/oozie/share/lib
+  register: nfs_result
+  until: nfs_result.stdout.find('lib_') != -1
+  retries: 10
+  tags: smoke-test

@@ -1,0 +1,25 @@
+---
+
+- include: spark-clean-install.yml
+  tags: spark-clean-install
+
+- include: spark-preinstall.yml
+  tags: spark-preinstall
+
+- include: spark-install.yml
+  tags: spark-install
+
+- include: spark-configure.yml
+  tags: spark-configure
+
+- include: spark-configure-tune.yml
+  when: spark_enable_dynamic_allocation
+  tags: spark-configure-tune
+
+- include: spark-re-configure.yml
+  tags: spark-re-configure
+
+- include: spark-tests.yml
+  tags: spark-tests
+
+

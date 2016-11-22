@@ -1,0 +1,53 @@
+---
+mapr_release_version: 5.2.0
+mapr_mep: 1.1.0
+licence_type: premium
+
+# Is LDAP must be installed
+use_ldap: no
+
+# Tenant group used in acces.conf
+ldap_tenant_group: local
+
+# LDAP company name fot HUE configuration.
+ldap_company : "TEST"
+
+# LDAP server name.
+ldap_server_name : "{{ groups['mapr-mock-ldapserver'][0] }}"
+
+# LDAP server address ( Mock server )
+ldap_server_address : "{{ hostvars[groups['mapr-mock-ldapserver'][0]] }}"
+
+# LDAP server port.
+ldap_server_port : "636"
+
+# LDAP server protocol.
+ldap_server_protocol : "ldaps"
+
+# Tenant organization for bind.
+ldap_bind_dn_o : "test"
+
+# Tenant organization unit for bind.
+ldap_bind_dn_ou : "mapr"
+
+# Tenant organization for search.
+ldap_dn_o : "test"
+
+# Tenant organization unit for search.
+ldap_dn_ou : "mapr"
+
+# LDAP CA certificate for ldaps (see resource directory)
+ldap_ca_cert_file_name :
+  - "ca-local.pem"
+
+# Positionner à True si certificats officiels PKI pour la console d'administration
+# Dans ce cas, placer les fichiers mcs.key et mcs.pem dans resources/mcs_keys
+mcs_official_certificat: true
+
+# Positionner à True si hue doit être utilisé en https
+# Dans ce cas, placer les fichiers hue.key et hue.pem dans resources/hue_keys
+hue_with_certificat: true
+
+additionnal_hosts: []
+additionnal_ports: []
+additionnal_hive_metastore_hosts: []

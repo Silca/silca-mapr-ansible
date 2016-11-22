@@ -1,0 +1,8 @@
+# Ip of the bridge created by KVM, use after to bind squid proxy
+lxd_bridge_ip: 192.168.2.1
+
+# Http proxy endpoint
+lxd_http_proxy_host: "{{ lxd_bridge_ip }}"
+lxd_http_proxy_port: 3148
+lxd_http_proxy: "http://{{ lxd_http_proxy_host }}:{{ http_proxy_port }}"
+lxd_https_proxy: "{{ lxd_http_proxy_host }}"

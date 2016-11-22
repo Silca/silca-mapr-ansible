@@ -1,0 +1,11 @@
+- name: "MapR | MySQL | Create  MySQL database \"{{ mysql_db }}\""
+  run_once: true
+  delegate_to: "{{  groups['mapr-ha-node'][0] }}"
+  mysql_db: name="{{ mysql_db }}" state=present
+
+- name: "MapR | MySQL | Check database exists on mysql node"
+  delegate_to: "{{  item }}"
+  shell: mysql --database {{ mysql_db }} -u root -e "select 123;"
+  with_items: "{{ groups['mapr-ha-node'] }}"
+  register: command_result
+  failed_when: "{{ '123' not in command_result.stdout_lines }}"

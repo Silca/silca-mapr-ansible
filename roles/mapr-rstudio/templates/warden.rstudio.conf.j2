@@ -1,0 +1,12 @@
+# {{ ansible_managed }}
+services=rstudio:all
+service.displayname=RStudio
+service.command.start=/usr/lib/rstudio-server/extras/warden_rstudio_initscript.sh start
+service.command.stop=/usr/lib/rstudio-server/extras/warden_rstudio_initscript.sh stop
+service.command.type=BACKGROUND
+service.command.monitorcommand=/usr/lib/rstudio-server/extras/warden_rstudio_initscript.sh status
+service.port={{ rstudio.web_port }}
+service.logs.location=/var/log/rstudio-server
+service.process.type=JAVA
+service.alarm.label=RStudioServerDown
+service.alarm.tersename=rstudio

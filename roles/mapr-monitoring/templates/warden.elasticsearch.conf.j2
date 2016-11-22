@@ -1,0 +1,28 @@
+#  {{ ansible_managed }}
+services=elasticsearch:all:nfs
+service.displayname=ES
+service.command.start=/opt/mapr/elasticsearch/elasticsearch-2.3.3/etc/init.d/elasticsearch start
+service.command.stop=/opt/mapr/elasticsearch/elasticsearch-2.3.3/etc/init.d/elasticsearch stop
+service.command.monitorcommand=/opt/mapr/elasticsearch/elasticsearch-2.3.3/etc/init.d/elasticsearch status
+service.command.type=BACKGROUND
+service.baseservice=1
+service.logs.location=/opt/mapr/elasticsearch/elasticsearch-2.3.3/var/log/elasticsearch
+service.process.type=JAVA
+service.alarm.tersename=naes
+service.alarm.label=ESServerDown
+#  Elasticsearch likes a lot of memory and it likes it locked
+#  Also set ES_HEAP_SIZE in $ES_HOME/etc/init.d/elasticsearch and enable memory locking in
+#  $ES_HOME/etc/elasticsearch/elasticsearch.yml
+#  If you set ES_HEAP_SIZE, set min and max below to the same value.
+#  If you can afford it, allow ES half of the system memory
+#  The actual heap size used when invoking a service is a combination of the three parameters according to the formula
+#      max(heapsize.min, min(heapsize.max, total-memory * heapsize.percent / 100)).
+
+
+# NOTE, If the sum of all the services' memory requirement is more than the machine has, warden will not start up...
+# parameter controls the percentage of system memory allocated to the named service.
+#service.heapsize.percent=15
+# parameter defines the maximum heapsize used when invoking the service.
+#service.heapsize.max=30000
+# parameter defines the minimum heapsize used when invoking the service.
+#service.heapsize.min=2000

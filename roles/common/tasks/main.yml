@@ -1,0 +1,157 @@
+- name: Remove Official repo
+  file: path="/etc/yum.repos.d/{{ item.repo }}" state=absent
+  with_items:
+    - repo: "CentOS-CR.repo"
+    - repo: "CentOS-Debuginfo.repo"
+    - repo: "CentOS-fasttrack.repo"
+    - repo: "CentOS-Media.repo"
+    - repo: "CentOS-Sources.repo"
+    - repo: "CentOS-Vault.repo"
+    - repo: "CentOS-Base.repo"
+    - repo: "epel.repo"
+    - repo: "CentOS-fasttrack.repo"
+  when: "{{ not yum_with_proxy }}"
+
+- name: Add Centos Repo for Pulp
+  template:
+    src: "{{ item.src }}"
+    dest: "/etc/yum.repos.d/{{ item.dest }}"
+    owner: root
+    group: root
+    mode: 0644
+  with_items:
+    - { src: "etc_yum.repos.d_centos6-base_pulp.repo.j2", dest: "CentOS-Base.repo" }
+    - { src: "etc_yum.repos.d_centos6-epel_pulp.repo.j2", dest: "epel.repo" }
+  when: "{{ not yum_with_proxy }}"
+
+
+- name: Add Centos Repo for Squid
+  template:
+    src: "{{ item.src }}"
+    dest: "/etc/yum.repos.d/{{ item.dest }}"
+    owner: root
+    group: root
+    mode: 0644
+  with_items:
+    - { src: "etc_yum.repos.d_centos6-base.repo.j2", dest: "CentOS-Base.repo" }
+    - { src: "etc_yum.repos.d_centos6-epel.repo.j2", dest: "epel.repo" }
+  when: "{{ not yum_with_proxy }}"
+
+- name: Removing fast mirror plugins to avoid cache miss
+  file: path=/etc/yum/pluginconf.d/fastestmirror.conf state=absent
+  when: "{{ yum_with_proxy }}"
+
+
+- name: Common | Install liselinux python for deactivate by Ansible selinux
+  package: pkg={{ item }}
+  with_items:
+    - libselinux-python
+  tags: package
+
+- name: Common | configure hostname
+  hostname:
+    name="{{ inventory_hostname|lower }}.{{ domain | default('local') }}"
+
+- name: Common | Disable selinux
+  selinux: state=disabled
+  when: "{{ platform != 'lxc' }}"
+
+- name: Common | SSHD | Remove GSS Api Authentication
+  replace: dest=/etc/ssh/sshd_config regexp="GSSAPIAuthentication yes" replace="GSSAPIAuthentication no"
+  tags: sshconfig
+
+- name: Common | SSHD | Restart sshd service to apply modification
+  service : name=sshd state=restarted
+  tags: sshconfig
+
+- name: Common MapR | Variables d'environnement globales
+  template: src=etc_environment.j2 dest=/etc/environment owner=root group=root mode=0755
+
+- name: MapR | Deactivate conflicting services
+  service: name="{{ item }}" state=stopped enabled=false
+  with_items:
+    - iptables
+  when: "{{  platform != 'lxc' and ansible_distribution_major_version == '6' }}"
+
+- name: Common | Ensures .bashrc.d dir exists
+  file: path=/root/.bashrc.d state=directory
+
+- name: Write Global bashrc Centos
+  file: src=bashrc-global-centos dest=/etc/bashrc owner=root group=root mode=0644
+
+- name: Configure Motd on Host
+  template: src=etc_motd.j2 dest=/etc/motd owner=root group=root mode=0644
+
+- name: Common | Check short hostname
+  command: hostname -s
+  register: short_hostname
+  failed_when: "short_hostname.stdout != '{{ inventory_hostname }}'"
+  tags: smoke-test
+
+- name: Common | Check fqdn
+  command: hostname -f
+  register: fqdn
+  failed_when: "fqdn.stdout != '{{ inventory_hostname }}.{{ domain | default('local') }}'"
+  tags: smoke-test
+
+- name: Common | Check ip
+  command: hostname -i
+  register: ip
+  failed_when: "ip.stdout != '{{ ansible_default_ipv4.address }}'"
+  tags: smoke-test
+
+- name: Common | Installation de goodies yum
+  package: pkg={{ item }} state=present
+  with_items:
+    - yum-plugin-fastestmirror
+    - iotop
+    - vim
+  tags: package
+
+#TODO, remove install-chrony from tags
+#Used only for urgent install on productionn
+- name: Common | Installation de paquets de base sur Centos
+  package: pkg={{ item }} state=present
+  with_items:
+    - python-devel
+    - nfs-utils
+    - wget
+    - iputils
+    - libsysfs
+    - syslinux
+    - nc
+    - sdparm
+    - sysstat
+    - java-1.8.0-openjdk
+    - java-1.8.0-openjdk-devel
+    - vim
+    - git
+    - telnet
+    - sudo
+    - mysql
+    - chrony
+  tags: ["package", "install-chrony"]
+
+- name: Common | Configure the servers endpoint list for chrony
+  template: src=etc_chrony_conf.j2 dest=/etc/chrony.conf owner=root group=root mode=0644
+  when: "platform != 'local'"
+  tags: configure-chrony
+
+- name: Common | Start the chrony deamon
+  service: name=chronyd state=restarted enabled=true
+  when: "platform != 'lxc'"
+  tags: configure-chrony
+
+- name: Common | Try to sync the chrony
+  shell: chronyc waitsync 3
+  ignore_errors: true
+  when: "{{ platform != 'local' and platform != 'lxc' }}"
+  tags: configure-chrony
+
+- name: Common | Set default java version
+  alternatives: name=java path=/usr/lib/jvm/jre-1.8.0-openjdk.x86_64/bin/java
+  tags: alternatives
+
+- name: Common | Set default javac version
+  alternatives: name=javac path=/usr/lib/jvm/java-1.8.0-openjdk.x86_64/bin/javac
+  tags: alternatives

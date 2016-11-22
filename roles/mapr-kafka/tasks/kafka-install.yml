@@ -1,0 +1,31 @@
+---
+- name: MapR | Kafka | Création du dossier {{ kafka_home_base }}
+  file: path={{ kafka_home_base }} state=directory
+  tags: package
+
+- stat: path=/opt/kafka/kafka_{{ scala_version }}-{{ kafka_version }}/bin
+  register: sym
+
+- name: MapR | Kafka | Download Apache Kafka from internet
+  get_url:
+    url=http://apache.trisect.eu/kafka/{{ kafka_version }}/kafka_{{ scala_version }}-{{ kafka_version }}.tgz
+    checksum={{ kafka_tgz_hash }}
+    dest=/tmp
+  environment:
+    http_proxy: "{{ http_proxy }}"
+  when: "platform == 'local' and sym.stat.islnk is not defined"
+  tags: package
+
+- name: MapR | Kafka | Download Apache Kafka from pulp
+  get_url:
+    url=https://{{ pulp_ip }}/apache/kafka/kafka_{{ scala_version }}-{{ kafka_version }}.tgz
+    validate_certs=no
+    checksum={{ kafka_tgz_hash }}
+    dest=/tmp
+  when: "platform != 'local' and sym.stat.islnk is not defined"
+  tags: package
+
+- name: MapR | Kafka | Installation Apache Kafka
+  unarchive: copy=no dest=/opt/kafka src=/tmp/kafka_{{ scala_version }}-{{ kafka_version }}.tgz
+  when: "sym.stat.islnk is not defined"
+  tags: package

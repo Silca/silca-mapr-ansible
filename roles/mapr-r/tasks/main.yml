@@ -1,0 +1,11 @@
+
+- name: MapR | R | Installation de R
+  package: pkg=R-{{ mapr_r_version }}* state=latest
+  tags: package
+
+- name: MapR | R | Remove old jdk
+  package: name="{{ item }}" state=absent
+  with_items:
+    - java-1.6.0-openjdk
+    - java-1.6.0-openjdk-devel
+  tags: package

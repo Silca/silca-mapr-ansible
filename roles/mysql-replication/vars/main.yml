@@ -1,0 +1,5 @@
+---
+
+mysql_replication_user_name: repl
+mysql_replication_user_host: "%"
+mysql_replication_user_priv: "*.*:REPLICATION SLAVE"

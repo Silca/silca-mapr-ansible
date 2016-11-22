@@ -1,0 +1,63 @@
+---
+
+- name: LXD | Destroy container
+  delegate_to: localhost
+  become: true
+  lxd_container:
+    name: "{{ inventory_hostname }}"
+    force_stop: true
+    state: absent
+
+- name: LXD | Create container
+  delegate_to: localhost
+  become: true
+  lxd_container:
+    name: "{{ inventory_hostname }}"
+    source:
+      type: image
+      mode: pull
+      server: https://images.linuxcontainers.org
+      protocol: lxd
+      alias: centos/6/amd64
+    state: started
+    wait_for_ipv4_addresses: true
+    config:
+      limits.cpu: "{{ lxd_cpus_pin }}"
+      limits.memory: "{{ lxd_memory }}"
+#      security.privileged: "true"
+      raw.apparmor: "mount fstype=nfs,"
+
+- name: LXD | Delete zvolume
+  delegate_to: localhost
+  command: zfs destroy lxd/{{ inventory_hostname }}
+  ignore_errors: true
+
+- name: LXD | Create zvolume
+  delegate_to: localhost
+  command: zfs create -V 30G lxd/{{ inventory_hostname }}
+
+- name: LXD | Add volume
+  delegate_to: localhost
+  command: lxc config device add {{ inventory_hostname }} volto-{{ inventory_hostname }} unix-block path=/dev/zvol/lxd/{{ inventory_hostname }}
+
+- name: LXD | Domain | Configure Yum.conf
+  template: src=etc_yum.conf.j2 dest=/etc/yum.conf owner=root group=root mode=0755
+
+- name: LXD | Domain | Configure Epel repo
+  template: src=epel.repo dest=/etc/yum.repos.d/epel.repo owner=root group=root mode=0755
+
+- name: Install epel-release and openssh
+  yum: name={{ item }}
+  with_items:
+    - openssh-server
+
+- name: LXD | Domain | Disable administrators SSH Keys for user root
+  authorized_key: user=root key="{{ lookup('file', '{{ inventory_dir }}/../common_vars/ssh-keys/root/enabled/ansible')}}" manage_dir=yes state=absent
+
+- name: LXD | Domain | Enable administrators SSH Keys for admin users
+  authorized_key: user=root key="{{ lookup('file', item )}}" manage_dir=yes
+  with_fileglob:
+    - '{{ inventory_dir }}/../common_vars/ssh-keys/root/enabled/*'
+
+- name: LXD | Enabled and start open ssh server
+  service: name=sshd state=restarted enabled=true

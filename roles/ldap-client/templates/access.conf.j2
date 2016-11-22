@@ -1,0 +1,16 @@
+# {{ ansible_managed }}
+
++:root:ALL
++:centos:ALL
++:luigi:ALL
+{% for user in ldap_extra_users %}
+{% if user is defined %}
++:{{ user }}:ALL
+{% endif %}
+{% endfor %}
++:@{{ ansible_hostname }}:ALL
++:@{{ ldap_tenant_group }}:ALL
++:@supaop:ALL
+-:ALL:ALL
+
+

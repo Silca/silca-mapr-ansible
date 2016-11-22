@@ -1,0 +1,5 @@
+---
+
+# Positionner à True si certificats officiels PKI pour la console d'administration
+# Dans ce cas, placer les fichiers mcs.key et mcs.pem dans resources/mcs_keys
+mcs_official_certificat: false

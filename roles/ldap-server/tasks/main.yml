@@ -1,0 +1,145 @@
+
+- name: Ldap Server | ldap | Optional package installation
+  package: pkg={{ item }} state=present
+  become: true
+  with_items:
+    - openldap-servers
+    - openldap-clients
+  tags: package
+
+
+- name: MapR | ldap | Set openldap client configuration
+  template:
+     src: "{{ item.src }}"
+     dest: "{{ item.dest }}"
+     backup: yes
+  with_items:
+     - { src : "ldap.conf.j2", dest : "/etc/openldap/ldap.conf" }
+
+- name: Ldap Server | Ensure Openldap cacerts directory exists
+  file: path=/etc/openldap/cacerts/ state=directory
+
+- name: Ldap Server | ldap | Copy private key to generate server certificate
+  copy:
+     src: "{{ inventory_dir }}/resources/ldap-keys/ldap-server-key.pem"
+     dest: "/etc/openldap/cacerts/ca-local-key.pem"
+
+- name: Ldap Server | ldap | Copy public key to generate server certificate
+  copy:
+     src: "{{ inventory_dir }}/resources/ca-local.pem"
+     dest: "/etc/openldap/cacerts/ca-local.pem"
+
+- name: Ldap Server | ldap | Create LDAP server CSR
+  command: |
+    openssl req
+       -new
+       -nodes
+       -subj "/CN={{ ansible_hostname }}/O=DEMOCOMPAGNIE/C=FR/ST=FRANCE/L=Paris"
+       -keyout /etc/openldap/certs/slapd-key.pem
+       -out /etc/openldap/certs/slapd-req.pem
+       -days 365
+
+- name: Ldap Server | ldap | Create server certificate
+  command: |
+     openssl x509
+        -req
+        -in /etc/openldap/certs/slapd-req.pem
+        -CA /etc/openldap/cacerts/ca-local.pem
+        -CAkey /etc/openldap/cacerts/ca-local-key.pem
+        -CAcreateserial
+        -out /etc/openldap/certs/slapd.pem
+        -days 365
+        -sha256
+
+- name: Ldap Server | ldap | Initialize slapd
+  copy:
+     src: "/usr/share/openldap-servers/DB_CONFIG.example"
+     dest: "/var/lib/ldap/DB_CONFIG"
+     remote_src: true
+
+- name: Ldap Server | ldap | Change owners
+  become: true
+  file:
+     path: "{{ item }}"
+     owner: ldap
+     group: ldap
+     recurse: True
+  with_items:
+     - "/var/lib/ldap"
+     - "/etc/openldap/slapd.d"
+
+- name: Ldap Server | ldap | Copy initialization init file to /tmp
+  template:
+     src: "init.ldif.j2"
+     dest: "/tmp/init.ldif"
+
+- name: Ldap Server | ldap | Copy initialization base file to /tmp
+  copy:
+     src: "{{ item }}"
+     dest: "/tmp/{{ item }}"
+  with_items:
+     - add-base.ldif
+     - delete-base.ldif
+
+- name: Ldap Server | ldap | Add service slapd and start it
+  service: name=slapd enabled=true state=started
+
+- name: Ldap Server | ldap | Initialise Ldap db
+  command: ldapmodify -Y EXTERNAL -H ldapi:/// -f /tmp/init.ldif
+
+- name: Ldap Server | ldap | Remove eventual previous declaration
+  command: |
+     ldapmodify
+        -H ldapi:///
+        -D "cn=lda_root_account,ou=profile,ou={{ ldap_bind_dn_ou }},o={{ ldap_bind_dn_o }}"
+        -w {{ vault_ldap_bind_password }}
+        -f /tmp/delete-base.ldif
+  ignore_errors: yes
+
+- name: Ldap Server | ldap | Add a test user 'maprtest'
+  command: |
+     ldapadd -H ldapi:///
+     -x
+     -w {{ vault_ldap_bind_password }}
+     -D "cn=lda_root_account,ou=profile,ou={{ ldap_bind_dn_ou }},o={{ ldap_bind_dn_o }}"
+     -f /tmp/add-base.ldif
+  ignore_errors: yes
+
+
+- name: Ldap Server | ldap | Declare SSL access on ldap server
+  lineinfile:
+     dest: "/etc/sysconfig/ldap"
+     regexp : '^(SLAPD_LDAPS=).*$'
+     state: present
+     line: '\1yes'
+     backrefs: yes
+     backup: yes
+
+- name: Ldap Server | ldap | Add service slapd and restarted it
+  become: true
+  service: name=slapd state=restarted
+
+- name: Ldap Server | ldap | Test if ldaps is available
+  shell: netstat -lt | grep -i ldaps
+  register: netstat_out
+  until: "'ldaps' in netstat_out.stdout"
+  retries: 10
+
+- name: Ldap Server | ldap | Control LDAP functionnality with search request
+  command: ldapsearch -w {{ vault_ldap_bind_password }} -D "cn=lda_root_account,ou=profile,ou={{ ldap_bind_dn_ou }},o={{ ldap_bind_dn_o }}" -b ou=People,ou={{ ldap_bind_dn_ou }},o={{ ldap_bind_dn_o }} uid="{{ item.user}}"
+  register: search_result
+  failed_when: "'{{ item.password}}' not in search_result.stdout"
+  with_items:
+    - { user: maprldap, password: 'e1NTSEF9bFN1Qmp3Q1pGRk9aeTdFbzllNzg1MzUzNkxxZ2l3R0k='}
+    - { user: luigildap, password: 'e1NTSEF9NmlFcW9JLy9mRk05R3pMQ01mcVBMTGMxY3NWS2JLekU='}
+  when: "{{ groups['mapr-mock-ldapserver'] | length > 0 }}"
+
+- name: Ldap Server | ldap | Control LDAP functionnality with search request with LDAP default config
+  command: ldapsearch -w {{ vault_ldap_bind_password }} -D "cn=lda_root_account,ou=profile,ou={{ ldap_bind_dn_ou }},o={{ ldap_bind_dn_o }}" uid="{{ item.user}}"
+  register: search_result
+  failed_when: "'{{ item.password}}' not in search_result.stdout"
+  with_items:
+    - { user: maprldap, password: 'e1NTSEF9bFN1Qmp3Q1pGRk9aeTdFbzllNzg1MzUzNkxxZ2l3R0k='}
+    - { user: luigildap, password: 'e1NTSEF9NmlFcW9JLy9mRk05R3pMQ01mcVBMTGMxY3NWS2JLekU='}
+  when: "{{ groups['mapr-mock-ldapserver'] | length > 0 }}"
+

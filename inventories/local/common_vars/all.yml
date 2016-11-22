@@ -1,0 +1,23 @@
+---
+
+# MapR licence type
+licence_type: basic
+
+# If proxy use url and not pulp
+yum_with_proxy: true
+
+# Http proxy endpoint
+http_proxy_host: "{{ bridge_ip }}"
+http_proxy_port: 3148
+http_proxy: "http://{{ bridge_ip }}:{{ http_proxy_port }}"
+https_proxy: "{{ http_proxy }}"
+
+# Used if yum_with_proxy = true
+yum_proxy_url: "{{ http_proxy }}"
+
+# Kafka install
+install_kafka: true
+
+additionnal_hosts: []
+additionnal_ports:
+  - "{{ kafka.port }}"

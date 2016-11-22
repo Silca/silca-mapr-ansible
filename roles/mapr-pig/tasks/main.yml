@@ -1,0 +1,4 @@
+
+- name: MapR | Pig | Installation de Pig
+  package: pkg=mapr-pig-{{ mapr_pig_version }}* state=latest
+  tags: package

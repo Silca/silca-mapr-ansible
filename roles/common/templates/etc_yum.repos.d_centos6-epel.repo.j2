@@ -1,0 +1,11 @@
+# {{ ansible_managed  }}
+
+[epel]
+name=Extra Packages for Enterprise Linux $releasever - $basearch
+{% if yum_with_proxy %}
+baseurl=http://download.fedoraproject.org/pub/epel/$releasever/$basearch
+{% else %}
+baseurl=http://{{ pulp_ip }}/pulp/repos/epel$releasever-autoupdate/
+{% endif %}
+enabled=1
+gpgcheck=0

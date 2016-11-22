@@ -1,0 +1,7 @@
+{
+  "name":"MaprMonitoringOpenTSDB",
+  "type":"opentsdb",
+  "url":"http://{{ inventory_hostname }}:{{ opentsdb.port }}",
+  "access":"proxy",
+  "basicAuth":false
+}

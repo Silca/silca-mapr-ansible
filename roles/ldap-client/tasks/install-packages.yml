@@ -1,0 +1,17 @@
+---
+
+- name: Ldap client | ldap | Required package installation
+  package: pkg={{ item }} state=present
+  become: true
+  with_items:
+    - authconfig
+    - pam
+    - pam_ldap
+    - nss-pam-ldapd
+    - openldap-clients
+    - nscd
+    - sssd
+    - sssd-tools
+    - ksh
+    - libpwquality
+  tags: package

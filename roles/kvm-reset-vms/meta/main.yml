@@ -1,0 +1,4 @@
+dependencies:
+  - { role: add-extra-groupvars }
+  - { role: kvm-vars }
+

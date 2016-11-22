@@ -1,0 +1,23 @@
+---
+
+- name: "HAProxy | Start assembling all conf.d/*.cfg in /etc/haproxy/haproxy.cfg"
+  shell: cp -f /etc/haproxy/haproxy.cfg /tmp/haproxy.cfg.tmp
+  ignore_errors: false
+
+- name: "HAProxy | Join all /etc/haproxy/conf.d files"
+  assemble:
+     src: /etc/haproxy/conf.d
+     dest: /tmp/services.cfg.tmp
+
+- name: "HAProxy | Add services to the haproxy temp file"
+  shell: cat /tmp/services.cfg.tmp >> /tmp/haproxy.cfg.tmp
+
+- name: "HAProxy | Validate the new HAProxy configuration"
+  shell: haproxy -c -f /tmp/haproxy.cfg.tmp
+  ignore_errors: false
+
+- name: "HAProxy | Activate the new configuration"
+  shell: cat /tmp/haproxy.cfg.tmp > /etc/haproxy/haproxy.cfg
+  notify: Restart HAProxy
+  ignore_errors: false
+

@@ -1,0 +1,20 @@
+- name: KVM | Net | Remove dhcp entry if exists
+  delegate_to: localhost
+  become: true
+  command: |
+    virsh net-update os-net
+    delete ip-dhcp-host
+      "<host mac='{{ inventory_hostname | mac_address }}' name='{{ inventory_hostname }}' ip='{{ ansible_host }}' />"
+    --live
+    --config
+  ignore_errors: yes
+
+- name: KVM | Net | Add new dhcp entry
+  delegate_to: localhost
+  become: true
+  command: |
+    virsh net-update os-net
+    add ip-dhcp-host
+      "<host mac='{{ inventory_hostname | mac_address }}' name='{{ inventory_hostname }}' ip='{{ ansible_host }}' />"
+    --live
+    --config

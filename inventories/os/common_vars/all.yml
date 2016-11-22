@@ -1,0 +1,19 @@
+# MapR licence type
+licence_type: premium
+
+domain: mycompany.com
+
+os_endpoint_type: internal
+
+# If proxy use url and not pulp
+yum_with_proxy: false
+
+# Used if yum_with_proxy = true
+yum_proxy_url:
+
+# Mapr volumes
+mapr_maprfs_volumes: [ "/dev/vdb", "/dev/vdc", "/dev/vdd", "/dev/vde" ]
+
+pulp_ip: 10.56.118.13
+
+http_proxy: "http://127.0.0.1:3128"

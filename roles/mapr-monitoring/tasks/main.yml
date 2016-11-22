@@ -1,0 +1,6 @@
+
+- name: MapR | Monitoring | Install Grafana
+  include: grafana.yml
+
+- name: MapR | Monitoring | Install ELK
+  include: elk.yml

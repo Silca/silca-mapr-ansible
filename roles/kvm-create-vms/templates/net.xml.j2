@@ -1,0 +1,15 @@
+<network>
+    <name>{{ kvm_netname }}</name>
+    <forward mode='nat'>
+        <nat>
+            <port start='1024' end='65535'/>
+        </nat>
+    </forward>
+    <bridge name='{{ kvm_bridge_name }}' stp='on' delay='0'/>
+    <mac address='52:54:00:e0:33:58'/>
+    <ip address='192.168.3.1' netmask='255.255.255.0'>
+        <dhcp>
+            <range start='192.168.3.2' end='192.168.3.20'/>
+        </dhcp>
+    </ip>
+</network>

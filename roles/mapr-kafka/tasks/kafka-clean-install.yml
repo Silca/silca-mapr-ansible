@@ -1,0 +1,15 @@
+---
+- name: MapR | Kafka | Stop actual kafka service
+  command: maprcli node services -action stop -name kafka -nodes {{ inventory_hostname }}
+  ignore_errors: true
+  tags: package
+
+- name: MapR | Kafka | Delete {{ kafka_home_base }}
+  file: path={{ kafka_home_base }} state=absent
+  when: uninstall_kafka is defined and uninstall_kafka == "yes"
+  tags: package
+
+- name: MapR | Kafka | Delete warden.kafka.conf
+  file: path=/opt/mapr/conf/conf.d/warden.kafka.conf state=absent
+  when: uninstall_kafka is defined and uninstall_kafka == "yes"
+  tags: package

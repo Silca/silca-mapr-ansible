@@ -1,0 +1,15 @@
+---
+
+# Logging settings.
+mysql_log: ""
+mysql_log_error: /var/log/mysql.err
+mysql_syslog_tag: mysql
+
+# Replication settings (replication is only enabled if master/user have values).
+mysql_max_binlog_size: "100M"
+mysql_binlog_format: "ROW"
+mysql_expire_logs_days: "10"
+
+# FIXME Unused
+mysql_replication_role: ''
+mysql_replication_master: ''

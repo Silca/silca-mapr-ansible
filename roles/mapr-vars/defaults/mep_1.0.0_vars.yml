@@ -1,0 +1,19 @@
+---
+
+
+mapr_drill_version: 1.6.0
+mapr_grafana_version: 3.1.1
+mapr_hadoop_version: 2.7.0
+mapr_hbase_version: 1.1.1
+mapr_hive_version: 1.2
+mapr_hive_schema_version: "{{ mapr_hive_version }}.0"
+mapr_httpfs_version: 1.0
+mapr_hue_version: 3.9.0
+mapr_oozie_version: 4.2.0
+mapr_pig_version: 0.15
+mapr_sentry_version: 1.6.0
+mapr_r_version: 3.3.1
+mapr_spark_version: 1.6.1
+mapr_sqoop2_version: 2.0.0
+mapr_sqoop_version: 1.4.6
+rstudio_server_version: 0.99.903

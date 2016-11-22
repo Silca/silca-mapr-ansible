@@ -1,0 +1,10 @@
+- name: MapR | Create mount directory for Mapr nfs
+  file: path=/mapr state=directory owner=root
+
+- name: MapR | Add Nfs /mapr in /opt/mapr/conf/mapr_fstab
+  lineinfile: dest=/opt/mapr/conf/mapr_fstab regexp=":/mapr" line="{{ inventory_hostname }}:/mapr /mapr hard,nolock" create=yes
+  notify: 
+    - Restart Zookeeper
+    - Restart Warden
+
+- meta: flush_handlers

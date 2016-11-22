@@ -1,0 +1,29 @@
+---
+
+- name: MapR | MySQL | Install mySQL server for metastore
+  package: pkg={{ item }}
+  with_items:
+    - mysql
+    - mysql-server
+    - MySQL-python
+  tags: package
+
+- name: MapR | MySQL | Bind only on 127.0.0.1 ( ha proxy for external)
+  lineinfile: dest=/etc/my.cnf insertafter="\[mysqld\]" line="default-storage-engine=InnoDB"
+
+- name: MapR | MySQL | Force MySQL timeout greater than default pool (jdbc)
+  lineinfile: dest=/etc/my.cnf insertafter="\[mysqld\]" line="connect_timeout=100"
+
+- name: MapR | MySQL | Restart mysql server and start at boot
+  service: name=mysqld state=restarted enabled=true
+
+- name: MapR | MySQL | Wait for mysql start
+  wait_for: port="{{ mysql.port }}"
+
+- name: MapR | MySQL | Execute a fake request to check mysql engine
+  shell: mysql -h localhost -u root -e "select 123;"
+  register: command_result
+  failed_when: "{{ '123' not in command_result.stdout_lines }}"
+
+- name: MapR | MySQL | Install ha proxy account
+  mysql_user: name=haproxy host="%" priv=*.*:USAGE state=present

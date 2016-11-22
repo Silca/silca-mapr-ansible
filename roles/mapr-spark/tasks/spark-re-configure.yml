@@ -1,0 +1,3 @@
+---
+- name: MapR | Spark | Reconfigure.sh due to Spark installation
+  command: /opt/mapr/server/configure.sh -R --isvm

@@ -1,0 +1,10 @@
+DROP TABLE IF EXISTS smoke_test;
+
+-- Create an External table referencing mapr db table
+CREATE EXTERNAL TABLE smoke_test(key int, column_test string)
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,smoke_test_cf:column_test")
+TBLPROPERTIES("hbase.table.name" = "/tmp/smoke_test");
+
+-- Select result for ansible smoke test
+select * from smoke_test;

@@ -1,0 +1,15 @@
+- name: KVM | Create kvm home directory
+  become: true
+  run_once: true
+  delegate_to: localhost
+  file: path="{{ kvm_dir }}" state=directory mode=0777
+
+- name: KVM | Create default structure for KVM
+  delegate_to: localhost
+  file: path="{{ item }}" state=directory
+  with_items:
+    - "{{ kvm_dir }}"
+    - "{{ kvm_os_dir }}"
+    - "{{ kvm_volume_dir }}"
+    - "{{ kvm_log_dir }}"
+    - "{{ kvm_metadata_dir }}"

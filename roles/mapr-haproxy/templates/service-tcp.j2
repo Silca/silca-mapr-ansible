@@ -1,0 +1,12 @@
+
+listen {{ item.service.name }} :{{ item.service.haproxyport }}
+    mode tcp
+{% for option_value in item.service.options|default([]) %}
+    option {{ option_value }}
+{% endfor %}
+{% if item.service.balance  is defined %}
+    balance {{ item.service.balance }}
+{% endif %}
+{% for server_node in item.service.servers|default([]) %}
+    server {{ server_node }} {{ server_node }}:{{ item.service.serverport }} check {{ ( not loop.first and item.service.backup_strategy is defined and item.service.backup_strategy == 'only_first') | ternary('backup', '')}}
+{% endfor %}

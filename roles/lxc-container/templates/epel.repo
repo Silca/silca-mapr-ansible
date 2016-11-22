@@ -1,0 +1,6 @@
+[epel]
+name=Extra Packages for Enterprise Linux 6
+baseurl=https://dl.fedoraproject.org/pub/epel/6/x86_64/
+failovermethod=priority
+enabled=1
+gpgcheck=0

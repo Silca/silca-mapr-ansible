@@ -1,0 +1,10 @@
+- name: KVM | Drop previous volume
+  become: true
+  delegate_to: localhost
+  file: path="{{ kvm_volume_dir }}/{{ inventory_hostname }}-system.qcow2" state=absent
+
+- name: KVM | Drop previous volume data
+  delegate_to: localhost
+  become: true
+  file: path="{{ kvm_volume_dir }}/{{ item }}" state=absent mode=0775
+  with_sequence: start=1 end="{{ volume_data_number }}" format="{{ inventory_hostname }}-data-%02x.qcow2"

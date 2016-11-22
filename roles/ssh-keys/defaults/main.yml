@@ -1,0 +1,5 @@
+---
+
+ssh_keys_root: "{{ inventory_dir }}/group_vars/ssh_keys"
+ssh_keys_enabled_directory: "{{ ssh_keys_root }}/enabled"
+ssh_keys_disabled_directory: "{{ ssh_keys_root }}/disabled"

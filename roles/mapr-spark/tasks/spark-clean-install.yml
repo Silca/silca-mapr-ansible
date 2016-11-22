@@ -1,0 +1,12 @@
+---
+- name: MapR | Spark | Stop the spark history server before uninstall
+  command: maprcli node services -action stop -name spark-historyserver -nodes {{ inventory_hostname }}
+  ignore_errors: true
+
+### To enable, run the mapr-install-ecosystem.yml playbook with --extra-vars "uninstall_spark=yes"
+- name: MapR | Spark | Uninstall Spark (Yarn version)
+  package: pkg={{ item }} state=absent
+  with_items:
+    - mapr-spark-{{ mapr_spark_version }}*
+    - mapr-spark-historyserver-{{ mapr_spark_version }}*
+  when: uninstall_spark is defined and uninstall_spark == "yes"

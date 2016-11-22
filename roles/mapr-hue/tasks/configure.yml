@@ -1,0 +1,35 @@
+- name: MapR | Hue | Create temporary dir for ssl certificate
+  file: path="/tmp/{{ inventory_hostname }}" state=directory
+  delegate_to: localhost
+
+- name: MapR | Hue | Generate self signed certificate
+  delegate_to: localhost
+  command:  |
+    openssl req
+    -subj '/CN={{ inventory_hostname }}/'
+    -x509
+    -days 3650
+    -batch -nodes
+    -newkey rsa:2048
+    -keyout /tmp/{{ inventory_hostname }}/hue.key
+    -out /tmp/{{ inventory_hostname }}/hue.pem
+  when: "{{ not hue_with_certificat }}"
+
+- name: MapR | Hue | Copy self signed certificate to node
+  copy:
+    src: "/tmp/{{ inventory_hostname }}/{{ item }}"
+    dest: "/opt/mapr/hue/hue-{{ mapr_hue_version }}/desktop/conf"
+    owner: mapr
+  with_items:
+    - hue.pem
+    - hue.key
+  when: "{{ not hue_with_certificat and inventory_hostname in groups['mapr-node'] }}"
+
+- name: MapR | Hue | Copy hue keys to remote
+  copy:
+    src: "{{ inventory_dir }}/resources/hue_keys/{{ item }}"
+    dest: "/opt/mapr/hue/hue-{{ mapr_hue_version }}/desktop/conf/{{ item }}"
+  with_items:
+    - hue.key
+    - hue.pem
+  when: "{{ hue_with_certificat }}"

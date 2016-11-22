@@ -1,0 +1,7 @@
+
+- name: restart sssd and nscd
+  service: name={{ item }} state=restarted enabled=yes
+  with_items:
+   - sssd
+   - nscd
+

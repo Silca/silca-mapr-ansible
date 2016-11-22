@@ -1,0 +1,94 @@
+- name: MapR | Core | Check if Warden service Exists
+  stat: path=/etc/init.d/mapr-warden
+  register: service_warden_status
+  tags: package
+
+- name: MapR | Core | Stop warden before (for upgrade)
+  service: name=mapr-warden state=stopped
+  when: "{{ service_warden_status.stat.exists }}"
+  tags: package
+
+- name: MapR | Core | Check if Zookeeper service Exists
+  stat: path=/etc/init.d/mapr-zookeeper
+  register: service_zookeeper_status
+  tags: package
+
+- name: MapR | Core | Stop Zookeeper (for upgrade)
+  service: name=mapr-zookeeper state=stopped
+  when: "{{ inventory_hostname in groups['mapr-zookeeper'] and  service_zookeeper_status.stat.exists }}"
+  tags: package
+
+- name: MapR | Core | Remove previous patches Mapr for upgrade (reinstalled after)
+  package: pkg=mapr-patch* state=absent
+  when: "{{ inventory_hostname in groups['mapr-node'] }}"
+  tags: package
+
+- name: MapR | Core | Installation de mapr-core
+  package: pkg={{ item }} state=latest
+  with_items:
+    - mapr-core-internal-{{ mapr_release_version | major_minor_patches }}*
+    - mapr-core-{{ mapr_release_version | major_minor_patches }}*
+  when: "{{ inventory_hostname in groups['mapr-node'] }}"
+  tags: package
+
+- name: MapR | Fileserver | Installation du service fileserver
+  package: pkg=mapr-fileserver-{{ mapr_release_version | major_minor_patches }}* state=latest
+  when: "{{ inventory_hostname in groups['mapr-node'] }}"
+  tags: package
+
+- name: MapR | CLDB | Installation du service cldb
+  package: pkg=mapr-cldb-{{ mapr_release_version | major_minor_patches }}* state=latest
+  when: "{{ inventory_hostname in groups['mapr-cldb'] }}"
+  tags: package
+
+- name: MapR | Zookeeper | Installation du service zookeeper
+  package: pkg={{ item }} state=latest
+  when: "{{ inventory_hostname in groups['mapr-zookeeper'] }}"
+  with_items:
+    - mapr-zk-internal-{{ mapr_release_version | major_minor_patches }}*
+    - mapr-zookeeper-{{ mapr_release_version | major_minor_patches }}*
+  tags: package
+
+- name: MapR | Nfs |  Installation du service NFS
+  package: pkg=mapr-nfs-{{ mapr_release_version | major_minor_patches }}* state=latest
+  when: "{{ inventory_hostname in groups['mapr-nfs'] }}"
+  tags: package
+
+- name: MapR | Webserver | Installation du service webserver
+  package: pkg=mapr-webserver-{{ mapr_release_version | major_minor_patches }}* state=latest
+  when: "{{ inventory_hostname in groups['mapr-webserver'] }}"
+  tags: package
+
+- name: MapR | Gateway | Installation du service gateway
+  package: pkg=mapr-gateway-{{ mapr_release_version | major_minor_patches }}* state=latest
+  when: "{{ inventory_hostname in groups['mapr-gateway'] }}"
+  tags: package
+
+- name: MapR | Hadoop | Installation de Hadoop
+  package: pkg=mapr-hadoop-core-{{ mapr_hadoop_version }}* state=latest
+  tags: package
+
+- name: MapR | ResourceManager | Installation du service resourcemanager
+  package: pkg={{ item }} state=latest
+  with_items:
+    - mapr-mapreduce2-{{ mapr_hadoop_version }}*
+    - mapr-resourcemanager-{{ mapr_hadoop_version }}*
+  when: "{{ inventory_hostname in groups['mapr-resourcemanager'] }}"
+  tags: package
+
+- name: MapR | NodeManager | Installation du service nodemanager
+  package: pkg={{ item }} state=latest
+  with_items:
+    - mapr-mapreduce2-{{ mapr_hadoop_version }}*
+    - mapr-nodemanager-{{ mapr_hadoop_version }}*
+  when: "{{ inventory_hostname in groups['mapr-nodemanager'] }}"
+  tags: package
+
+- name: MapR | HistoryServer | Installation du service historyserver
+  package: pkg={{ item }} state=latest
+  with_items:
+    - mapr-mapreduce2-{{ mapr_hadoop_version }}*
+    - mapr-historyserver-{{ mapr_hadoop_version }}*
+  when: "{{ inventory_hostname == groups['mapr-historyserver'][0] }}"
+  tags: package
+

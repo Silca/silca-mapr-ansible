@@ -1,0 +1,7 @@
+#cloud-config
+fqdn: {{ inventory_hostname }}-user.local
+users:
+  - name: centos
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+    ssh-authorized-keys:
+      - {{ lookup('file', '{{ inventory_dir }}/../common_vars/ssh-keys/root/enabled/ansible') }}

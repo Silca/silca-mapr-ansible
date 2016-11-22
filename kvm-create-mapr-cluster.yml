@@ -1,0 +1,14 @@
+
+- hosts: localhost
+  gather_facts: yes
+
+- hosts: mapr-node:mapr-ha-node
+  gather_facts: no
+  serial: 1
+  roles:
+    - { role: kvm-prerequisites, tags: [ kvm-prerequisites ] }
+
+- hosts: mapr-node:mapr-ha-node
+  gather_facts: no
+  roles:
+    - { role: kvm-create-vms, tags: [ kvm-create-vms ] }

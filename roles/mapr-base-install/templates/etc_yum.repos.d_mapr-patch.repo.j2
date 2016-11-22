@@ -1,0 +1,11 @@
+[maprtech-patch]
+name=MapR Technologies
+{% if yum_with_proxy %}
+baseurl=http://package.mapr.com/patches/releases/v{{ mapr_release_version | major_minor_patches }}/redhat/
+{% else %}
+baseurl=http://{{ pulp_ip }}/pulp/repos/mapr-patch-{{ mapr_release_version | major_minor_patches }}
+{% endif %}
+enabled=1
+gpgcheck=0
+protect=1
+sslverify=0

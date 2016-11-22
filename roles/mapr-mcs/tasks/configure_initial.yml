@@ -1,0 +1,14 @@
+---
+
+- name: MapR | Mcs | Re-assign original password and original  for ssl native MapR install
+  set_fact:
+      ssl_stores_password: "{{ vault_initial_ssl_stores_password }}"
+      mcs_ssl_truststore_file: /opt/mapr/conf/ssl_truststore
+      mcs_ssl_keystore_file: /opt/mapr/conf/ssl_keystore
+
+- name: MapR | Mcs | Configure ssl-client.xml
+  template: src=ssl-client.xml.j2 dest=/opt/mapr/hadoop/hadoop-{{ mapr_hadoop_version }}/etc/hadoop/ssl-client.xml backup=yes
+
+- name: MapR | Mcs | Configure ssl-server.xml
+  template: src=ssl-server.xml.j2 dest=/opt/mapr/hadoop/hadoop-{{ mapr_hadoop_version }}/etc/hadoop/ssl-server.xml backup=yes
+  notify: Restart Warden

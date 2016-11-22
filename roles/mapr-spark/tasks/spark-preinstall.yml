@@ -1,0 +1,7 @@
+---
+
+- name: MapR | Spark | Création du répertoire /apps/spark dans HDFS
+  command: hadoop fs -mkdir -p /apps/spark
+
+- name: MapR | Spark | Correction des droits pour le répertoire /apps/spark
+  command: hadoop fs -chmod 777 /apps/spark

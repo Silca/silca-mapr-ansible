@@ -1,0 +1,20 @@
+- name: MapR | Patches | Stop warden before applying patches
+  service: name=mapr-warden state=stopped
+  tags: package
+
+- name: MapR | Patches | Stop Zookeeper before applying patches
+  service: name=mapr-zookeeper state=stopped
+  when: "{{ inventory_hostname in groups['mapr-zookeeper'] }}"
+  tags: package
+
+- name: MapR | Core | Remove previous patches Mapr
+  package: pkg=mapr-patch-{{ mapr_release_version | major_minor_patches }}* state=absent
+  when: "{{ inventory_hostname in groups['mapr-node'] }}"
+  tags: package
+
+- name: MapR | Core | Install patches Mapr
+  package: pkg=mapr-patch-{{ mapr_release_version | major_minor_patches }}* state=latest
+  when: "{{ inventory_hostname in groups['mapr-node'] }}"
+  notify: Restart Warden
+  tags: package
+

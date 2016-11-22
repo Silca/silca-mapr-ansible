@@ -1,0 +1,72 @@
+---
+
+- name: MapR | Mcs | delete keystore first
+  file: path=/opt/mapr/conf/ssl_stores state=absent
+
+- name: MapR | Mcs | delete keystore first
+  file: path=/tmp/mcs_keys state=absent
+
+- name: MapR | Mcs | create tmp keystore first
+  file: path=/tmp/mcs_keys state=directory
+
+- name: MapR | Mcs | Copy mcs keys to remote
+  copy:
+    src: "{{ inventory_dir }}/resources/mcs_keys/{{ item }}"
+    dest: "/tmp/mcs_keys/{{ item }}"
+  with_items:
+    - mcs.key
+    - mcs.pem
+  when: ("{{ inventory_hostname in groups['mapr-webserver'] and mcs_official_certificat }}" )
+
+- name: MapR | Mcs | Re-assign original password and original  for ssl native MapR install
+  set_fact:
+      ssl_stores_password: "{{ vault_ssl_stores_password }}"
+      mcs_ssl_truststore_file: /opt/mapr/conf/ssl_stores/ssl_truststore
+      mcs_ssl_keystore_file: /opt/mapr/conf/ssl_stores/ssl_keystore
+
+- name: MapR | Mcs | create store first
+  file: path=/opt/mapr/conf/ssl_stores mode=0644 owner=mapr group=mapr state=directory
+
+- name: MapR | Mcs | create p12 file
+  shell:
+    openssl pkcs12 -export
+    -in /tmp/mcs_keys/mcs.pem
+    -inkey /tmp/mcs_keys/mcs.key
+    -out /tmp/mcs_keys/mcs.p12
+    -password pass:{{ vault_ssl_stores_password }}
+    -passin pass:{{ vault_ssl_stores_password }}
+
+- name: MapR | Mcs | Create keystore
+  shell:
+    keytool -importkeystore
+    -srckeystore /tmp/mcs_keys/mcs.p12
+    -srcstoretype PKCS12 -destkeystore /opt/mapr/conf/ssl_stores/ssl_keystore
+    -deststoretype JKS -storepass {{ vault_ssl_stores_password }}
+    -new {{ vault_ssl_stores_password }}
+    -srcstorepass {{ vault_ssl_stores_password }}
+
+- name: MapR | Mcs | Create truststore
+  shell:
+    keytool -importcert
+    -file /tmp/mcs_keys/mcs.pem
+    -noprompt -alias "NC CA"
+    -keystore /opt/mapr/conf/ssl_stores/ssl_truststore
+    -storepass {{ vault_ssl_stores_password }}
+    -new {{ vault_ssl_stores_password }}
+    -srcstorepass {{ vault_ssl_stores_password }}
+
+- name: MapR | Mcs | Chown keystore & truststore
+  file: path=/opt/mapr/conf/ssl_stores owner=mapr group=mapr
+
+- name: MapR | Mcs | Configure ssl-client.xml
+  template: src=ssl-client.xml.j2 dest=/opt/mapr/hadoop/hadoop-{{ mapr_hadoop_version }}/etc/hadoop/ssl-client.xml backup=yes owner=mapr group=mapr
+
+- name: MapR | Mcs | Configure ssl-server.xml
+  template: src=ssl-server.xml.j2 dest=/opt/mapr/hadoop/hadoop-{{ mapr_hadoop_version }}/etc/hadoop/ssl-server.xml backup=yes owner=mapr group=mapr
+
+- name: MapR | Mcs | set ssl_stores owner
+  file: path=/opt/mapr/conf/ssl_stores mode=0744 owner=mapr group=mapr state=directory recurse=yes
+  notify: Restart Warden
+
+
+

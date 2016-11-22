@@ -1,0 +1,52 @@
+
+- name: MapR | Hbase Client | Installing hbase client binaries
+  package: pkg="{{ item }}-{{ mapr_hbase_version }}*" state=latest
+  with_items:
+    - mapr-hbase
+    - mapr-hbasethrift
+  tags: package
+
+- name: MapR | Hbase Client | Reconfigure.sh due to Hbase installation
+  command: /opt/mapr/server/configure.sh -R --isvm
+
+- name: MapR | Hbase Client | Suppression de la table smoke_test
+  command: maprcli table delete -path /tmp/smoke_test
+  ignore_errors: true
+  run_once: true
+  when: "{{ licence_type == 'premium' }}"
+  tags: smoke-test
+
+- name: MapR | Hbase Client | Create a test table
+  command: maprcli table create -path /tmp/smoke_test
+  run_once: true
+  when: "{{ licence_type == 'premium' }}"
+  tags: smoke-test
+
+- name: MapR | Hbase Client | Create a column family for smoke_test
+  command: maprcli table cf create -path /tmp/smoke_test -cfname smoke_test_cf
+  run_once: true
+  when: "{{ licence_type == 'premium' }}"
+  tags: smoke-test
+
+- name: MapR | Hbase Client | Put one line
+  shell: echo "put '/tmp/smoke_test', '1', 'smoke_test_cf:column_test', 'smoke test_value'" | hbase shell
+  when: "{{ licence_type == 'premium' }}"
+  tags: smoke-test
+
+- name: MapR | Hbase Client | Read table from hbase cli for all client node
+  shell: echo "scan '/tmp/smoke_test'" | hbase shell
+  register: hbase_cli_result
+  failed_when: "{{ hbase_cli_result.stdout.find('1 row(s) in ') == -1 }}"
+  when: "{{ licence_type == 'premium' }}"
+  tags: smoke-test
+
+- name: MapR | Hbase Client | Templating test script for hive
+  template: src=hive_smoke_test.sql.j2 dest=/tmp/hive_smoke_test.sql mode=0755
+  when: "{{ licence_type == 'premium' }}"
+  tags: smoke-test
+
+- name: MapR | Hbase Client | Test hive select on mapr db table
+  command: hive -f /tmp/hive_smoke_test.sql
+  run_once: true
+  when: "{{ licence_type == 'premium' }}"
+  tags: smoke-test

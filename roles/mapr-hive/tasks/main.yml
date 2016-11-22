@@ -1,0 +1,96 @@
+---
+
+- name: MapR | Hive | Installation Hive Server
+  package: name={{ item }} state=latest
+  with_items:
+    - mapr-hive-{{ mapr_hive_version }}*
+    - mapr-hiveserver2-{{ mapr_hive_version }}*
+  when: "{{ inventory_hostname in groups['mapr-hive-server'] }}"
+  tags: package
+
+- name: MapR | Hive | Installation Hive MetaStore
+  package: pkg={{ item }} state=present
+  with_items:
+    - mapr-hive-{{ mapr_hive_version }}*
+    - mapr-hivemetastore-{{ mapr_hive_version }}*
+  when: "{{ inventory_hostname in groups['mapr-hive-metastore'] }}"
+  tags: package
+
+- name: MapR | Hive | Add environment variable
+  lineinfile: dest=/etc/profile regexp="{{ item.begin }}" line="{{ item.line }}"
+  with_items:
+    - { begin: "^export HIVE_HOME", line: "export HIVE_HOME=/opt/mapr/hive/hive-{{ mapr_hive_version }}" }
+    - { begin: "^export PATH=$PATH:$HIVE_HOME", line: "export PATH=$PATH:$HIVE_HOME/bin" }
+
+- name: MapR | Hive | Java Heap Size for Hive client to 4096m
+  lineinfile:
+     dest : /opt/mapr/hive/hive-{{ mapr_hive_version }}/conf/hive-env.sh
+     regexp: "export HADOOP_CLIENT_OPTS"
+     line : export HADOOP_CLIENT_OPTS=" -Xmx4096m"
+     create : yes
+     owner : mapr
+     group : root
+     mode : 0644
+  tags: [ hive-client-heap-size ]
+
+- name: MapR | Hive | Configure Metastore uri
+  blockinfile:
+    dest:   /opt/mapr/hive/hive-{{ mapr_hive_version }}/conf/hive-site.xml
+    marker: "<!-- {mark} ANSIBLE MANAGED BLOCK for Hive metastore URI -->"
+    insertafter: "<configuration>"
+    block: |
+        <property>
+          <name>javax.jdo.option.ConnectionURL</name>
+          <value>jdbc:mysql://{{ groups['mapr-ha-node'][0] }}:{{ ha_proxy.mysql_port }}/{{ hive.db_name }}?autoReconnect=true&amp;interactiveClient=true</value>
+          <description>JDBC connect string for a JDBC metastore</description>
+        </property>
+        <property>
+          <name>javax.jdo.option.ConnectionDriverName</name>
+          <value>com.mysql.jdbc.Driver</value>
+          <description>Driver class name for a JDBC metastore</description>
+        </property>
+        <property>
+          <name>javax.jdo.option.ConnectionUserName</name>
+          <value>{{ hive.db_user }}</value>
+          <description>username to use against metastore database</description>
+        </property>
+        <property>
+          <name>javax.jdo.option.ConnectionPassword</name>
+          <value>{{ hive.db_passwd }}</value>
+          <description>password to use against metastore database</description>
+        </property>
+        <property>
+          <name>hive.metastore.uris</name>
+          <value>{% for meta in groups['mapr-hive-metastore'] %}thrift://{{ meta }}:{{ hive.hivemeta_port }}{% if not loop.last %},{% endif %}{% endfor %}</value>
+        </property>
+        <property>
+          <name>datanucleus.schema.autoCreateAll</name>
+          <value>true</value>
+        </property>
+  when: "{{ inventory_hostname in groups['mapr-hive']}}"
+
+- name: MapR | Reconfigure.sh due to Hive installation
+  command: /opt/mapr/server/configure.sh -R --isvm
+  notify: Restart Warden
+
+- meta: flush_handlers
+
+- name: MapR | Hive | Wait for Hive Metastore to be ready
+  wait_for: port="{{ hive.hivemeta_port }}"
+  when: "{{ groups['mapr-hive-server'] | length == 1 and inventory_hostname in groups['mapr-hive-metastore'] }}"
+
+- name: MapR | Hive | Wait for Hive Server 2 to be ready
+  wait_for: port="{{ hive.hs2_port }}"
+  when: "{{ groups['mapr-hive-server'] | length == 1 and inventory_hostname in groups['mapr-hive-server'] }}"
+
+- name: MapR | Hive | Création du répertoire /user/hive/warehouse dans HDFS
+  command: hadoop fs -mkdir -p /user/hive/warehouse
+  become: yes
+  become_user: mapr
+  run_once: true
+
+- name: MapR | Hive | Test a simple hive command to validate install on each node
+  shell: echo 'show databases;' | hive
+  register: command_result
+  failed_when: "{{ 'default' not in command_result.stdout_lines }}"
+  tags: smoke-test

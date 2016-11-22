@@ -1,0 +1,17 @@
+# Openstack - vaults
+vault_os_keystone_pwd: ohXeidaeg7
+
+# Mapr - vaults
+vault_crypted_mapr_password: iCh4ge9ohv
+vault_crypted_luigi_password: Roonahdau3
+
+# Ldap password
+vault_ldap_bind_password : Eh3heeh9Ai
+
+# Password initial
+vault_initial_ssl_stores_password: phoh9opeCo
+
+# Official password for certificats
+vault_ssl_stores_password: phaNgooR7a
+
+vault_ldap_default_authtok: your_auth_token

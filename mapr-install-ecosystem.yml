@@ -1,0 +1,99 @@
+---
+
+- hosts: mapr-node
+  serial: "{{ rolling_update | default(true) | ternary ('30%', '100%') }}"
+  roles:
+    - { role: mapr-hadoop, tags: [ mapr-install-hadoop ] }
+
+- hosts: mapr-hive
+  serial: "{{ rolling_update | default(true) | ternary ('30%', '100%') }}"
+  any_errors_fatal: true
+  roles:
+    - { role: mapr-hive, tags: [ mapr-install-hive ] }
+
+- hosts: mapr-hbase-client
+  serial: "{{ rolling_update | default(true) | ternary ('30%', '100%') }}"
+  any_errors_fatal: true
+  roles:
+    - { role: mapr-hbase-client, tags: [ mapr-install-hbase-client ] }
+
+- hosts: mapr-sqoop2
+  serial: "{{ rolling_update | default(true) | ternary ('30%', '100%') }}"
+  any_errors_fatal: true
+  roles:
+    - { role: mapr-sqoop2, tags: [ mapr-install-sqoop2 ] }
+
+
+- hosts: mapr-sqoop
+  serial: "{{ rolling_update | default(true) | ternary ('30%', '100%') }}"
+  any_errors_fatal: true
+  roles:
+    - { role: mapr-sqoop, tags: [ mapr-install-sqoop ] }
+
+
+- hosts: mapr-httpfs
+  serial: "{{ rolling_update | default(true) | ternary ('30%', '100%') }}"
+  any_errors_fatal: true
+  roles:
+    - { role: mapr-httpfs, tags: [ mapr-install-httpfs ] }
+
+- hosts: mapr-pig
+  any_errors_fatal: true
+  roles:
+    - { role: mapr-pig, tags: [ mapr-install-pig ] }
+
+- hosts: mapr-r
+  any_errors_fatal: true
+  roles:
+    - { role: mapr-r, tags: [ mapr-install-r ] }
+
+- hosts: mapr-spark
+  serial: "{{ rolling_update | default(true) | ternary ('30%', '100%') }}"
+  any_errors_fatal: true
+  roles:
+    - { role: mapr-spark, tags: [ mapr-install-spark ] }
+
+- hosts: mapr-hue
+  serial: 1
+  any_errors_fatal: true
+  roles:
+    - { role: mapr-hue, tags: [ mapr-install-hue ] }
+
+- hosts: mapr-webserver
+  serial: "{{ rolling_update | default(true) | ternary ('30%', '100%') }}"
+  any_errors_fatal: true
+  roles:
+    - { role: mapr-mcs, tags: [ mapr-install-mcs ] }
+
+- hosts: mapr-oozie
+  serial: "{{ rolling_update | default(true) | ternary ('30%', '100%') }}"
+  any_errors_fatal: true
+  roles:
+    - { role: mapr-oozie, tags: [ mapr-install-oozie ] }
+
+- hosts: mapr-drill
+  serial: "{{ rolling_update | default(true) | ternary ('30%', '100%') }}"
+  any_errors_fatal: true
+  roles:
+    - { role: mapr-drill, tags: [ mapr-install-drill ] }
+
+- hosts: mapr-rstudio
+  serial: "{{ rolling_update | default(true) | ternary ('30%', '100%') }}"
+  any_errors_fatal: true
+  roles:
+    - { role: mapr-rstudio, tags: [ mapr-install-rstudio ] }
+
+- hosts: mapr-kafka
+  serial: "{{ rolling_update | default(true) | ternary ('30%', '100%') }}"
+  roles:
+    - { role: add-extra-groupvars, tags: [ add-extra-groupvars ] }
+    - { role: mapr-kafka, when: "{{ install_kafka }}", tags: [ mapr-install-kafka ]}
+
+- hosts: mapr-monitoring
+  roles:
+    - { role: mapr-monitoring, when: "{{ mapr_release_version != '5.1.0' }}", tags: [ mapr-install-monitoring ]}
+
+- hosts: mapr-node:mapr-ha-node
+  gather_facts: true
+  roles:
+    - { role: mapr-site-infos }

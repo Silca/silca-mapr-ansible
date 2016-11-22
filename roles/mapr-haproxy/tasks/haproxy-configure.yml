@@ -1,0 +1,10 @@
+---
+- name: "HAProxy | Create The HAProxy conf.d"
+  file:
+    path: /etc/haproxy/conf.d
+    state: directory
+    recurse: yes
+
+
+- name: "HAProxy | Install HAProxy configuration"
+  template: src=haproxy.cfg.j2 dest=/etc/haproxy/haproxy.cfg

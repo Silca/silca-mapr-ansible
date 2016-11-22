@@ -1,0 +1,19 @@
+---
+- name: "HAProxy |  Create haproxy tcp services config files"
+  template:
+    src: service-tcp.j2
+    dest: "/etc/haproxy/conf.d/{{ item.service.name }}.cfg"
+  with_items: "{{ haproxy_service_configs.tcp }}"
+  notify: Restart HAProxy
+  tags:
+    - haproxy-tcp-services-config
+
+
+- name: "HAProxy |  Create haproxy http services config files"
+  template:
+    src: service-http.j2
+    dest: "/etc/haproxy/conf.d/{{ item.service.name }}.cfg"
+  with_items: "{{ haproxy_service_configs.http }}"
+  notify: Restart HAProxy
+  tags:
+    - haproxy-http-services-config

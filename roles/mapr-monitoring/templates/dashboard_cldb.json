@@ -1,0 +1,993 @@
+{
+	"overwrite": true,
+	"dashboard": {
+		"__inputs": [
+			{
+				"name": "DS_MAPRMONITORINGOPENTSDB",
+				"label": "MaprMonitoringOpenTSDB",
+				"description": "",
+				"type": "datasource",
+				"pluginId": "opentsdb",
+				"pluginName": "OpenTSDB"
+			}
+		],
+		"__requires": [
+			{
+				"type": "panel",
+				"id": "text",
+				"name": "Text",
+				"version": ""
+			},
+			{
+				"type": "panel",
+				"id": "singlestat",
+				"name": "Singlestat",
+				"version": ""
+			},
+			{
+				"type": "panel",
+				"id": "graph",
+				"name": "Graph",
+				"version": ""
+			},
+			{
+				"type": "grafana",
+				"id": "grafana",
+				"name": "Grafana",
+				"version": "3.1.1"
+			},
+			{
+				"type": "datasource",
+				"id": "opentsdb",
+				"name": "OpenTSDB",
+				"version": "1.0.0"
+			}
+		],
+		"id": null,
+		"title": "CLDB Dashboard",
+		"tags": [
+			"Default"
+		],
+		"style": "dark",
+		"timezone": "browser",
+		"editable": true,
+		"hideControls": false,
+		"sharedCrosshair": false,
+		"rows": [
+			{
+				"collapse": false,
+				"editable": true,
+				"height": "25px",
+				"panels": [
+					{
+						"content": "The cluster dashboard provides high level view of the MapR Cluster. It has the following information - Number of nodes, node status, number of volumes, container information, disk capacity as well as resource Utilization across the cluster - cpu, memory, disk",
+						"editable": true,
+						"error": false,
+						"id": 12,
+						"isNew": true,
+						"links": [],
+						"mode": "text",
+						"span": 12,
+						"style": {
+							"font-size": "24pt"
+						},
+						"title": "What's in here",
+						"transparent": true,
+						"type": "text"
+					}
+				],
+				"showTitle": false,
+				"title": "WHAt's in HERE"
+			},
+			{
+				"collapse": false,
+				"editable": true,
+				"height": "25px",
+				"panels": [
+					{
+						"cacheTimeout": null,
+						"colorBackground": false,
+						"colorValue": true,
+						"colors": [
+							"rgba(245, 54, 54, 0.9)",
+							"rgba(237, 129, 40, 0.89)",
+							"rgba(50, 172, 45, 0.97)"
+						],
+						"datasource": "MaprMonitoringOpenTSDB",
+						"editable": true,
+						"error": false,
+						"format": "none",
+						"gauge": {
+							"maxValue": 100,
+							"minValue": 0,
+							"show": false,
+							"thresholdLabels": false,
+							"thresholdMarkers": true
+						},
+						"height": "",
+						"hideTimeOverride": false,
+						"id": 2,
+						"interval": null,
+						"links": [],
+						"maxDataPoints": 100,
+						"nullPointMode": "connected",
+						"nullText": null,
+						"postfix": "",
+						"postfixFontSize": "50%",
+						"prefix": "",
+						"prefixFontSize": "50%",
+						"span": 4,
+						"sparkline": {
+							"fillColor": "rgba(31, 118, 189, 0.18)",
+							"full": false,
+							"lineColor": "rgb(31, 120, 193)",
+							"show": false
+						},
+						"targets": [
+							{
+								"aggregator": "sum",
+								"currentTagKey": "",
+								"currentTagValue": "",
+								"downsampleAggregator": "avg",
+								"downsampleFillPolicy": "none",
+								"errors": {},
+								"metric": "mapr.cldb.nodes_in_cluster",
+								"refId": "A",
+								"shouldComputeRate": false,
+								"tags": {
+									"clusterid": "$ClusterID"
+								}
+							}
+						],
+						"thresholds": "1,2,3",
+						"timeFrom": null,
+						"title": "# Nodes",
+						"type": "singlestat",
+						"valueFontSize": "80%",
+						"valueMaps": [
+							{
+								"op": "=",
+								"text": "N/A",
+								"value": "null"
+							}
+						],
+						"valueName": "avg",
+						"mappingTypes": [
+							{
+								"name": "value to text",
+								"value": 1
+							},
+							{
+								"name": "range to text",
+								"value": 2
+							}
+						],
+						"rangeMaps": [
+							{
+								"from": "null",
+								"to": "null",
+								"text": "N/A"
+							}
+						],
+						"mappingType": 1
+					},
+					{
+						"cacheTimeout": null,
+						"colorBackground": false,
+						"colorValue": true,
+						"colors": [
+							"rgba(245, 54, 54, 0.9)",
+							"rgba(237, 129, 40, 0.89)",
+							"rgba(50, 172, 45, 0.97)"
+						],
+						"datasource": "MaprMonitoringOpenTSDB",
+						"editable": true,
+						"error": false,
+						"format": "none",
+						"gauge": {
+							"maxValue": 100,
+							"minValue": 0,
+							"show": false,
+							"thresholdLabels": false,
+							"thresholdMarkers": true
+						},
+						"id": 9,
+						"interval": null,
+						"links": [],
+						"maxDataPoints": 100,
+						"nullPointMode": "connected",
+						"nullText": null,
+						"postfix": "",
+						"postfixFontSize": "50%",
+						"prefix": "",
+						"prefixFontSize": "50%",
+						"span": 4,
+						"sparkline": {
+							"fillColor": "rgba(31, 118, 189, 0.18)",
+							"full": false,
+							"lineColor": "rgb(31, 120, 193)",
+							"show": false
+						},
+						"targets": [
+							{
+								"aggregator": "avg",
+								"alias": "",
+								"currentTagKey": "",
+								"currentTagValue": "",
+								"downsampleAggregator": "avg",
+								"downsampleFillPolicy": "none",
+								"errors": {},
+								"metric": "mapr.cldb.nodes_offline",
+								"refId": "A",
+								"tags": {
+									"clusterid": "$ClusterID"
+								}
+							}
+						],
+						"thresholds": "2,1,0",
+						"title": "#Nodes offline",
+						"type": "singlestat",
+						"valueFontSize": "80%",
+						"valueMaps": [
+							{
+								"op": "=",
+								"text": "N/A",
+								"value": "null"
+							}
+						],
+						"valueName": "avg",
+						"mappingTypes": [
+							{
+								"name": "value to text",
+								"value": 1
+							},
+							{
+								"name": "range to text",
+								"value": 2
+							}
+						],
+						"rangeMaps": [
+							{
+								"from": "null",
+								"to": "null",
+								"text": "N/A"
+							}
+						],
+						"mappingType": 1
+					},
+					{
+						"cacheTimeout": null,
+						"colorBackground": false,
+						"colorValue": true,
+						"colors": [
+							"rgba(245, 54, 54, 0.9)",
+							"rgba(237, 129, 40, 0.89)",
+							"rgba(50, 172, 45, 0.97)"
+						],
+						"datasource": "MaprMonitoringOpenTSDB",
+						"editable": true,
+						"error": false,
+						"format": "gbytes",
+						"gauge": {
+							"maxValue": 100,
+							"minValue": 0,
+							"show": false,
+							"thresholdLabels": false,
+							"thresholdMarkers": true
+						},
+						"id": 6,
+						"interval": null,
+						"links": [],
+						"maxDataPoints": 100,
+						"nullPointMode": "connected",
+						"nullText": null,
+						"postfix": "",
+						"postfixFontSize": "50%",
+						"prefix": "",
+						"prefixFontSize": "50%",
+						"span": 4,
+						"sparkline": {
+							"fillColor": "rgba(31, 118, 189, 0.18)",
+							"full": false,
+							"lineColor": "rgb(31, 120, 193)",
+							"show": false
+						},
+						"targets": [
+							{
+								"aggregator": "sum",
+								"alias": "Disk Space Available",
+								"currentTagKey": "",
+								"currentTagValue": "",
+								"downsampleAggregator": "avg",
+								"downsampleFillPolicy": "none",
+								"downsampleInterval": "",
+								"errors": {},
+								"metric": "mapr.cldb.disk_space_available",
+								"refId": "A",
+								"tags": {
+									"clusterid": "$ClusterID"
+								}
+							}
+						],
+						"thresholds": "0.2,0.3",
+						"title": "Disk Space Available",
+						"type": "singlestat",
+						"valueFontSize": "80%",
+						"valueMaps": [
+							{
+								"op": "=",
+								"text": "N/A",
+								"value": "null"
+							}
+						],
+						"valueName": "avg",
+						"mappingTypes": [
+							{
+								"name": "value to text",
+								"value": 1
+							},
+							{
+								"name": "range to text",
+								"value": 2
+							}
+						],
+						"rangeMaps": [
+							{
+								"from": "null",
+								"to": "null",
+								"text": "N/A"
+							}
+						],
+						"mappingType": 1
+					},
+					{
+						"cacheTimeout": null,
+						"colorBackground": false,
+						"colorValue": false,
+						"colors": [
+							"rgba(245, 54, 54, 0.9)",
+							"rgba(237, 129, 40, 0.89)",
+							"rgba(50, 172, 45, 0.97)"
+						],
+						"datasource": "MaprMonitoringOpenTSDB",
+						"editable": true,
+						"error": false,
+						"format": "none",
+						"gauge": {
+							"maxValue": 100,
+							"minValue": 0,
+							"show": false,
+							"thresholdLabels": false,
+							"thresholdMarkers": true
+						},
+						"id": 4,
+						"interval": null,
+						"links": [],
+						"maxDataPoints": 100,
+						"nullPointMode": "connected",
+						"nullText": null,
+						"postfix": "",
+						"postfixFontSize": "50%",
+						"prefix": "",
+						"prefixFontSize": "50%",
+						"span": 4,
+						"sparkline": {
+							"fillColor": "rgba(31, 118, 189, 0.18)",
+							"full": false,
+							"lineColor": "rgb(31, 120, 193)",
+							"show": false
+						},
+						"targets": [
+							{
+								"aggregator": "sum",
+								"currentTagKey": "",
+								"currentTagValue": "",
+								"downsampleAggregator": "avg",
+								"downsampleFillPolicy": "none",
+								"errors": {},
+								"metric": "mapr.cldb.containers",
+								"refId": "A",
+								"shouldComputeRate": false,
+								"tags": {
+									"clusterid": "$ClusterID"
+								}
+							}
+						],
+						"thresholds": "",
+						"title": "# Containers",
+						"type": "singlestat",
+						"valueFontSize": "80%",
+						"valueMaps": [
+							{
+								"op": "=",
+								"text": "N/A",
+								"value": "null"
+							}
+						],
+						"valueName": "avg",
+						"mappingTypes": [
+							{
+								"name": "value to text",
+								"value": 1
+							},
+							{
+								"name": "range to text",
+								"value": 2
+							}
+						],
+						"rangeMaps": [
+							{
+								"from": "null",
+								"to": "null",
+								"text": "N/A"
+							}
+						],
+						"mappingType": 1
+					},
+					{
+						"cacheTimeout": null,
+						"colorBackground": false,
+						"colorValue": false,
+						"colors": [
+							"rgba(245, 54, 54, 0.9)",
+							"rgba(237, 129, 40, 0.89)",
+							"rgba(50, 172, 45, 0.97)"
+						],
+						"datasource": "MaprMonitoringOpenTSDB",
+						"editable": true,
+						"error": false,
+						"format": "none",
+						"gauge": {
+							"maxValue": 100,
+							"minValue": 0,
+							"show": false,
+							"thresholdLabels": false,
+							"thresholdMarkers": true
+						},
+						"id": 8,
+						"interval": null,
+						"links": [],
+						"maxDataPoints": 100,
+						"nullPointMode": "connected",
+						"nullText": null,
+						"postfix": "",
+						"postfixFontSize": "50%",
+						"prefix": "",
+						"prefixFontSize": "50%",
+						"span": 4,
+						"sparkline": {
+							"fillColor": "rgba(31, 118, 189, 0.18)",
+							"full": false,
+							"lineColor": "rgb(31, 120, 193)",
+							"show": false
+						},
+						"targets": [
+							{
+								"aggregator": "sum",
+								"currentTagKey": "",
+								"currentTagValue": "",
+								"downsampleAggregator": "avg",
+								"downsampleFillPolicy": "none",
+								"errors": {},
+								"metric": "mapr.cldb.containers_unusable",
+								"refId": "A",
+								"tags": {
+									"clusterid": "$ClusterID"
+								}
+							}
+						],
+						"thresholds": "",
+						"title": "# Unusable containers",
+						"type": "singlestat",
+						"valueFontSize": "80%",
+						"valueMaps": [
+							{
+								"op": "=",
+								"text": "N/A",
+								"value": "null"
+							}
+						],
+						"valueName": "avg",
+						"mappingTypes": [
+							{
+								"name": "value to text",
+								"value": 1
+							},
+							{
+								"name": "range to text",
+								"value": 2
+							}
+						],
+						"rangeMaps": [
+							{
+								"from": "null",
+								"to": "null",
+								"text": "N/A"
+							}
+						],
+						"mappingType": 1
+					},
+					{
+						"cacheTimeout": null,
+						"colorBackground": false,
+						"colorValue": false,
+						"colors": [
+							"rgba(245, 54, 54, 0.9)",
+							"rgba(237, 129, 40, 0.89)",
+							"rgba(50, 172, 45, 0.97)"
+						],
+						"datasource": "MaprMonitoringOpenTSDB",
+						"editable": true,
+						"error": false,
+						"format": "none",
+						"gauge": {
+							"maxValue": 100,
+							"minValue": 0,
+							"show": false,
+							"thresholdLabels": false,
+							"thresholdMarkers": true
+						},
+						"id": 11,
+						"interval": null,
+						"links": [
+							{
+								"dashUri": "db/volume-dashboard",
+								"dashboard": "Volume Dashboard",
+								"keepTime": true,
+								"title": "Volume Dashboard",
+								"type": "dashboard"
+							}
+						],
+						"maxDataPoints": 100,
+						"nullPointMode": "connected",
+						"nullText": null,
+						"postfix": "",
+						"postfixFontSize": "50%",
+						"prefix": "",
+						"prefixFontSize": "50%",
+						"span": 4,
+						"sparkline": {
+							"fillColor": "rgba(31, 118, 189, 0.18)",
+							"full": false,
+							"lineColor": "rgb(31, 120, 193)",
+							"show": false
+						},
+						"targets": [
+							{
+								"aggregator": "sum",
+								"alias": "Disk Space Available",
+								"currentTagKey": "",
+								"currentTagValue": "",
+								"downsampleAggregator": "avg",
+								"downsampleFillPolicy": "none",
+								"errors": {},
+								"metric": "mapr.cldb.volumes",
+								"refId": "A",
+								"tags": {
+									"clusterid": "$ClusterID"
+								}
+							}
+						],
+						"thresholds": "0.2,0.3",
+						"title": "Volumes",
+						"type": "singlestat",
+						"valueFontSize": "80%",
+						"valueMaps": [
+							{
+								"op": "=",
+								"text": "N/A",
+								"value": "null"
+							}
+						],
+						"valueName": "avg",
+						"mappingTypes": [
+							{
+								"name": "value to text",
+								"value": 1
+							},
+							{
+								"name": "range to text",
+								"value": 2
+							}
+						],
+						"rangeMaps": [
+							{
+								"from": "null",
+								"to": "null",
+								"text": "N/A"
+							}
+						],
+						"mappingType": 1
+					}
+				],
+				"showTitle": true,
+				"title": "Cluster information"
+			},
+			{
+				"collapse": false,
+				"editable": true,
+				"height": "250px",
+				"panels": [
+					{
+						"aliasColors": {},
+						"bars": false,
+						"datasource": "MaprMonitoringOpenTSDB",
+						"editable": true,
+						"error": false,
+						"fill": 1,
+						"grid": {
+							"threshold1": null,
+							"threshold1Color": "rgba(216, 200, 27, 0.27)",
+							"threshold2": null,
+							"threshold2Color": "rgba(234, 112, 112, 0.22)"
+						},
+						"id": 1,
+						"legend": {
+							"avg": false,
+							"current": false,
+							"max": false,
+							"min": false,
+							"show": true,
+							"total": false,
+							"values": false
+						},
+						"lines": true,
+						"linewidth": 2,
+						"links": [
+							{
+								"dashUri": "db/node-dashboard",
+								"dashboard": "Node Dashboard",
+								"keepTime": true,
+								"title": "Node Dashboard",
+								"type": "dashboard"
+							}
+						],
+						"nullPointMode": "connected",
+						"percentage": false,
+						"pointradius": 5,
+						"points": false,
+						"renderer": "flot",
+						"seriesOverrides": [],
+						"span": 4,
+						"stack": false,
+						"steppedLine": false,
+						"targets": [
+							{
+								"aggregator": "avg",
+								"alias": "Busy",
+								"currentTagKey": "",
+								"currentTagValue": "",
+								"downsampleAggregator": "avg",
+								"downsampleFillPolicy": "none",
+								"errors": {},
+								"hide": false,
+								"metric": "mapr.cldb.cluster_cpubusy_percent",
+								"refId": "B",
+								"shouldComputeRate": false,
+								"tags": {
+									"clusterid": "$ClusterID"
+								},
+								"target": ""
+							}
+						],
+						"timeFrom": null,
+						"timeShift": null,
+						"title": "CPU utilization",
+						"tooltip": {
+							"msResolution": false,
+							"shared": true,
+							"value_type": "cumulative",
+							"sort": 0
+						},
+						"type": "graph",
+						"xaxis": {
+							"show": true
+						},
+						"yaxes": [
+							{
+								"format": "percent",
+								"logBase": 1,
+								"max": null,
+								"min": null,
+								"show": true
+							},
+							{
+								"format": "none",
+								"logBase": 1,
+								"max": null,
+								"min": null,
+								"show": true
+							}
+						]
+					},
+					{
+						"aliasColors": {},
+						"bars": false,
+						"datasource": "MaprMonitoringOpenTSDB",
+						"editable": true,
+						"error": false,
+						"fill": 1,
+						"grid": {
+							"threshold1": null,
+							"threshold1Color": "rgba(216, 200, 27, 0.27)",
+							"threshold2": null,
+							"threshold2Color": "rgba(234, 112, 112, 0.22)"
+						},
+						"id": 3,
+						"legend": {
+							"avg": false,
+							"current": true,
+							"max": false,
+							"min": false,
+							"show": true,
+							"total": false,
+							"values": true
+						},
+						"lines": true,
+						"linewidth": 2,
+						"links": [
+							{
+								"dashUri": "db/node-dashboard",
+								"dashboard": "Node Dashboard",
+								"keepTime": true,
+								"title": "Node Dashboard",
+								"type": "dashboard"
+							}
+						],
+						"nullPointMode": "connected",
+						"percentage": false,
+						"pointradius": 5,
+						"points": false,
+						"renderer": "flot",
+						"seriesOverrides": [],
+						"span": 4,
+						"stack": false,
+						"steppedLine": false,
+						"targets": [
+							{
+								"aggregator": "sum",
+								"alias": "Capacity",
+								"currentTagKey": "",
+								"currentTagValue": "",
+								"downsampleAggregator": "avg",
+								"downsampleFillPolicy": "none",
+								"errors": {},
+								"metric": "mapr.cldb.cluster_disk_capacity",
+								"refId": "A",
+								"shouldComputeRate": false,
+								"tags": {
+									"clusterid": "$ClusterID"
+								}
+							},
+							{
+								"aggregator": "sum",
+								"alias": "Used",
+								"currentTagKey": "",
+								"currentTagValue": "",
+								"downsampleAggregator": "avg",
+								"downsampleFillPolicy": "none",
+								"errors": {},
+								"metric": "mapr.cldb.cluster_diskspace_used",
+								"refId": "B",
+								"shouldComputeRate": false,
+								"tags": {
+									"clusterid": "$ClusterID"
+								},
+								"target": ""
+							}
+						],
+						"timeFrom": null,
+						"timeShift": null,
+						"title": "Disk Utilization",
+						"tooltip": {
+							"msResolution": false,
+							"shared": true,
+							"value_type": "cumulative",
+							"sort": 0
+						},
+						"type": "graph",
+						"xaxis": {
+							"show": true
+						},
+						"yaxes": [
+							{
+								"format": "gbytes",
+								"logBase": 1,
+								"max": null,
+								"min": null,
+								"show": true
+							},
+							{
+								"format": "short",
+								"logBase": 1,
+								"max": null,
+								"min": null,
+								"show": true
+							}
+						]
+					},
+					{
+						"aliasColors": {},
+						"bars": false,
+						"datasource": "MaprMonitoringOpenTSDB",
+						"editable": true,
+						"error": false,
+						"fill": 1,
+						"grid": {
+							"threshold1": null,
+							"threshold1Color": "rgba(216, 200, 27, 0.27)",
+							"threshold2": null,
+							"threshold2Color": "rgba(234, 112, 112, 0.22)"
+						},
+						"id": 5,
+						"legend": {
+							"avg": false,
+							"current": false,
+							"max": false,
+							"min": false,
+							"show": true,
+							"total": false,
+							"values": false
+						},
+						"lines": true,
+						"linewidth": 2,
+						"links": [
+							{
+								"dashUri": "db/node-dashboard",
+								"dashboard": "Node Dashboard",
+								"keepTime": true,
+								"title": "Node Dashboard",
+								"type": "dashboard"
+							}
+						],
+						"nullPointMode": "connected",
+						"percentage": false,
+						"pointradius": 5,
+						"points": false,
+						"renderer": "flot",
+						"seriesOverrides": [],
+						"span": 4,
+						"stack": false,
+						"steppedLine": false,
+						"targets": [
+							{
+								"aggregator": "sum",
+								"alias": "Capacity",
+								"currentTagKey": "",
+								"currentTagValue": "",
+								"downsampleAggregator": "avg",
+								"downsampleFillPolicy": "none",
+								"downsampleInterval": "",
+								"errors": {},
+								"metric": "mapr.cldb.cluster_memory_capacity",
+								"refId": "A",
+								"shouldComputeRate": false,
+								"tags": {
+									"clusterid": "$ClusterID"
+								}
+							},
+							{
+								"aggregator": "sum",
+								"alias": "Used",
+								"currentTagKey": "",
+								"currentTagValue": "",
+								"downsampleAggregator": "avg",
+								"downsampleFillPolicy": "none",
+								"errors": {},
+								"metric": "mapr.cldb.cluster_memory_used",
+								"refId": "B",
+								"shouldComputeRate": false,
+								"tags": {
+									"clusterid": "$ClusterID"
+								},
+								"target": ""
+							}
+						],
+						"timeFrom": null,
+						"timeShift": null,
+						"title": "Memory utilization",
+						"tooltip": {
+							"msResolution": false,
+							"shared": true,
+							"value_type": "cumulative",
+							"sort": 0
+						},
+						"type": "graph",
+						"xaxis": {
+							"show": true
+						},
+						"yaxes": [
+							{
+								"format": "kbytes",
+								"logBase": 1,
+								"max": null,
+								"min": null,
+								"show": true
+							},
+							{
+								"format": "kbytes",
+								"logBase": 1,
+								"max": null,
+								"min": null,
+								"show": true
+							}
+						]
+					}
+				],
+				"showTitle": true,
+				"title": "Cluster Utilization"
+			}
+		],
+		"time": {
+			"from": "now-1h",
+			"to": "now"
+		},
+		"timepicker": {
+			"collapse": false,
+			"enable": true,
+			"notice": false,
+			"now": true,
+			"refresh_intervals": [
+				"5s",
+				"10s",
+				"30s",
+				"1m",
+				"5m",
+				"15m",
+				"30m",
+				"1h",
+				"2h",
+				"1d"
+			],
+			"status": "Stable",
+			"time_options": [
+				"5m",
+				"15m",
+				"1h",
+				"6h",
+				"12h",
+				"24h",
+				"2d",
+				"7d",
+				"30d"
+			],
+			"type": "timepicker"
+		},
+		"templating": {
+			"list": [
+				{
+					"allFormat": "glob",
+					"current": {},
+					"datasource": "MaprMonitoringOpenTSDB",
+					"hide": 0,
+					"includeAll": false,
+					"multi": false,
+					"multiFormat": "glob",
+					"name": "ClusterID",
+					"options": [],
+					"query": "tag_values(mapr.cldb.nodes_in_cluster, clusterid)",
+					"refresh": 1,
+					"type": "query"
+				}
+			]
+		},
+		"annotations": {
+			"list": []
+		},
+		"refresh": "5m",
+		"schemaVersion": 12,
+		"version": 2,
+		"links": [
+			{
+				"asDropdown": true,
+				"icon": "external link",
+				"tags": [
+					"Demo"
+				],
+				"title": "Demo Dashboards",
+				"type": "dashboards"
+			}
+		],
+		"gnetId": null
+	}
+}

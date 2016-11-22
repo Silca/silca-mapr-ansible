@@ -1,0 +1,126 @@
+---
+
+# Don't include mep in mapr dict because default strategy
+# is replace and using merge isn't recommended
+mapr_mep: 1.0.0
+mapr_release_version: 5.1.0
+
+mapr:
+  cluster_name: "{{ tenant | lower }}{{ platform_type is defined | ternary('-', '') }}{{ platform_type | default('') }}-cluster"
+  java_home: /usr/lib/jvm/java-1.8.0
+  home: /opt/mapr
+  user: mapr
+  subnet: "{{ ansible_default_ipv4.network }}/{{ subnet_prefix }}"
+
+subnet_without_prefix: "{{ ansible_default_ipv4.network }}/{{ ansible_default_ipv4.netmask }}"
+subnet_prefix: "{{ subnet_without_prefix | ipaddr('prefix') }}"
+
+nodemanager:
+  rpc:
+    port: 8040
+  ui:
+    port: 8042
+
+zookeeper:
+  port: 5181
+  urls: "{{ groups['mapr-zookeeper'] | join(',') }}"
+  urls_with_port: "{{ groups['mapr-zookeeper'] | join(':5181,') }}:5181"
+
+cldb:
+  port: 7222
+  ui_port: 7221
+  urls: "{{ groups['mapr-cldb'] | join(',') }}"
+
+mcs:
+  port: 8443
+
+es:
+  version: 2.3.3
+  port: 9200
+
+kibana:
+  port: 5601
+
+resourcemanager:
+  port: 8032
+  http_port: 8088
+
+
+drill:
+  http_port: 8047
+  rpc_user_port: 31010
+
+mysql:
+  port: 3306
+
+grafana:
+  port: 3000
+  db_name: grafana
+  db_user: grafana
+  db_passwd: grafanapasswd
+
+opentsdb:
+  port: 4242
+
+hive:
+  db_name: hive
+  db_user: hive
+  db_passwd: hivepasswd
+  hivemeta_port: 9083
+  hs2_port: 10000
+
+httpfs:
+  port: 14000
+
+nfs:
+  port_mapper: 111
+  port_server: 2049
+  port_monitor: 9997
+  port_mgmt: 9998
+
+mfs:
+  port_1: 5660
+  port_2: 6660
+  port_3: 5692
+
+oozie:
+  db_name: oozie
+  db_user: oozie
+  db_passwd: ooziepasswd
+  web_port: 11000
+
+sqoop2:
+  server_port: 12000
+  nodes: "{{ groups['mapr-sqoop2'] | join(',') }}"
+  db_name: sqoop2
+  db_user: sqoop2
+  db_passwd: sqoop2passwd
+
+historyserver:
+  urls: "{{ groups['mapr-historyserver'][0] }}"
+  http_port: 19888
+  rpc_port: 10020
+
+spark:
+  livy_port: 8998
+  ui_ports: { start: 4040, end: 4060 }
+  historyserver_port: 18080
+
+hue:
+  webserver_port: 8888
+  db_name: hue
+  db_user: hue
+  db_passwd: huepasswd
+
+ha_proxy:
+  mysql_port: 3305
+  kibana_port: 5601
+  es_port: 9199
+  admin_port: 30001
+
+kafka:
+  port: 9092
+
+rstudio:
+  web_port: 8787
+

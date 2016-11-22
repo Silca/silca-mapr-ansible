@@ -1,0 +1,66 @@
+
+- name: MapR | Monitoring | Install Fluentd, Grafana and ES
+  package: pkg="{{ item }}" state=latest
+  with_items:
+   - mapr-fluentd
+   - mapr-elasticsearch
+  tags: package
+
+- name: MapR | Monitoring | Templating warden.elasticsearch.conf to wait for nfs service
+  template:
+    src: "warden.elasticsearch.conf.j2"
+    dest: "{{ item }}"
+    owner: mapr
+    group: mapr
+    mode: "0644"
+  with_items:
+    - "/opt/mapr/elasticsearch/elasticsearch-{{ es.version }}/etc/elasticsearch/conf/warden.elasticsearch.conf"
+    - "/opt/mapr/conf/conf.d/warden.elasticsearch.conf"
+  tags: monitoring_config_warden
+
+
+- name: MapR | Monitoring | Install Kibana
+  package: pkg="{{ item }}" state=latest
+  with_items:
+   - mapr-kibana
+  when: "{{ inventory_hostname == groups['mapr-monitoring'][0] }}"
+  tags: package
+
+- name: MapR | Monitoring | Check mount NFS
+  shell:  mount -t nfs
+  register: nfsmount
+  retries: 30
+  until: "'/mapr' in nfsmount.stdout"
+  delay: 1
+
+- name: "MapR | Monitoring | Check if /elk/data/{{ inventory_hostname }}"
+  stat: path=/mapr/{{ mapr.cluster_name }}/elk/data/{{ inventory_hostname }}
+  register: elk_volume
+
+- name: "MapR | Monitoring | Create volume  for /elk/data/{{ inventory_hostname }}"
+  command: |
+    maprcli volume create
+      -name mapr.elk.{{ inventory_hostname }}
+      -path /elk/data/{{ inventory_hostname }}
+      -replication 1
+      -minreplication 1
+      -createparent 1
+  become_user: mapr
+  become: true
+  when: elk_volume.stat.islnk is not defined
+
+- name: MapR | Monitoring | Configure ELK
+  command: |
+    /opt/mapr/server/configure.sh
+      -R
+      -OT {{ groups['mapr-monitoring'] | join(',') }}
+      -ES {{ groups['mapr-monitoring'] | join(',') }}
+      -ESDB /mapr/{{ mapr.cluster_name }}/elk/data/{{ inventory_hostname }}
+      --isvm
+  notify: Restart Warden
+
+- name: MapR | Monitoring | Wait for Kibana, ES
+  wait_for: port={{ item }}
+  with_items:
+    - "{{ kibana.port }}"
+  when: "{{ inventory_hostname == groups['mapr-monitoring'][0] }}"

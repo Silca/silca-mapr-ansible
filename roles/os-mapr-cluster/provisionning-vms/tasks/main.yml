@@ -1,0 +1,55 @@
+
+- name: OpenStack | Create a port for provider network
+  delegate_to: "{{ groups['ansible_admin_node'][0] }}"
+  os_port:
+    state: present
+    auth: "{{ os_cloud_auth }}"
+    name: "port_{{ inventory_hostname }}"
+    network: "{{ os_network_provider | ternary('provider', 'private') }}_{{ tenant }}"
+    endpoint_type: "{{ os_endpoint_type }}"
+    fixed_ips:
+      - ip_address: "{{ ansible_host }}"
+    security_groups: "{{ os_security_groups }}"
+  when: "{{ os_network_provider }}"
+
+- name: Openstack | Create openstack vm Mapr node on network provider
+  delegate_to: "{{ groups['ansible_admin_node'][0] }}"
+  os_server:
+    auth: "{{ os_cloud_auth }}"
+    state: present
+    name: "{{ inventory_hostname }}"
+    image: "{{ os_image_name }}"
+    key_name: ansible_keypair
+    flavor: "{{ os_flavor }}"
+    auto_ip: false
+    nics:
+      - port-name: "port_{{ inventory_hostname }}"
+    endpoint_type: "{{ os_endpoint_type }}"
+    availability_zone: "{{ os_availability_zone }}"
+  when: "{{ os_network_provider }}"
+
+- name: Openstack | Create openstack vm Mapr node without network provider
+  delegate_to: "{{ groups['ansible_admin_node'][0] }}"
+  os_server:
+    auth: "{{ os_cloud_auth }}"
+    state: present
+    name: "{{ inventory_hostname }}"
+    image: "{{ os_image_name }}"
+    key_name: ansible_keypair
+    flavor: "{{ os_flavor }}"
+    security_groups: ["{{ os_security_groups }}"]
+    nics:
+      - net-name: "private_{{ tenant }}"
+    floating_ips: "{{ ansible_host }}"
+    endpoint_type: "{{ os_endpoint_type }}"
+    availability_zone: "{{ os_availability_zone }}"
+  when: "{{ not os_network_provider }}"
+
+- name: Openstack | Assigning Floating ips
+  delegate_to: "{{ groups['ansible_admin_node'][0] }}"
+  os_floating_ip:
+    auth: "{{ os_cloud_auth }}"
+    server: "{{ inventory_hostname }}"
+    floating_ip_address: "{{ ansible_host }}"
+    endpoint_type: "{{ os_endpoint_type }}"
+  when: "{{ not os_network_provider }}"

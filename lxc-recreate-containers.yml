@@ -1,0 +1,10 @@
+- hosts: localhost
+  gather_facts: yes
+  tasks:
+    - name: Registering localhost ip for configuring squid url inside lxc containers
+      action: setup
+
+- hosts: mapr-node:mapr-ha-node
+  gather_facts: no
+  roles:
+    - { role: lxc-container }

@@ -1,0 +1,8 @@
+- name: Mapr | Site | Templatize cluster infos
+  delegate_to: localhost
+  run_once: true
+  template: src=cluster_infos.json dest="/tmp/cluster_infos.json"
+
+- name: Mapr | Site | Copy cluster infos
+  copy: src="/tmp/cluster_infos.json" dest=/var/tmp mode=0644
+  when: "{{ inventory_hostname in groups['mapr-ha-node'] }}"

@@ -1,0 +1,15 @@
+- name: Virsh | Configure Network
+  include: network.yml
+  tags: "kvm-configure-networks"
+
+- name: Virsh | Configure Volumes
+  include: volumes.yml
+  tags: "kvm-configure-volumes"
+
+- name: Virsh | Configure Domains
+  include: domain.yml
+  tags: "kvm-configure-domains"
+
+- name: Virsh | Post install Vm
+  include: post_install.yml
+  tags: "kvm-install-vms"

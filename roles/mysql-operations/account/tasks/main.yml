@@ -1,0 +1,70 @@
+
+- name: "MapR | MySQL | Create  MySQL account for the Mysql Master node: \"{{ mysql_db }}\" and user \"{{ mysql_user }}\""
+  run_once: true
+  delegate_to: "{{  groups['mapr-ha-node'][0] }}"
+  mysql_user:
+    login_host: localhost
+    name: "{{ mysql_user }}"
+    password: "{{ mysql_passwd }}"
+    priv: "{{ mysql_db }}.*:ALL"
+    host: "{{ item[0] }}{{ item[1] }}"
+    state: present
+  with_nested:
+    - "{{ ['localhost'] | union(groups['mapr-node']) | union(groups['mapr-ha-node'])}}"
+    - ["", ".{{ domain | default('local') }}"]
+
+- name: "MapR | MySQL | Create  addionnal MySQL accounts"
+  run_once: true
+  delegate_to: "{{  groups['mapr-ha-node'][0] }}"
+  mysql_user:
+    login_host: localhost
+    name: "{{ mysql_user }}"
+    password: "{{ mysql_passwd }}"
+    priv: "{{ mysql_db }}.*:ALL"
+    host: "{{ item }}"
+    state: present
+  with_items: "{{ mysql_additionnal_hosts }}"
+
+
+- name: "MapR | MySQL | Create  MySQL account for the Mysql Slave node: \"{{ mysql_db }}\" and user \"{{ mysql_user }}\""
+  run_once: true
+  delegate_to: "{{  groups['mapr-ha-node'][1] }}"
+  mysql_user:
+    login_host: localhost
+    name: "{{ mysql_user }}"
+    password: "{{ mysql_passwd }}"
+    priv: "{{ mysql_db }}.*:ALL"
+    host: "{{ item[0] }}{{ item[1] }}"
+    state: present
+  with_nested:
+    - "{{ ['localhost'] | union(groups['mapr-node']) | union(groups['mapr-ha-node'])}}"
+    - ["", ".{{ domain | default('local') }}"]
+  when: "{{ groups['mapr-ha-node'] | length > 1 }}"
+
+- name: "MapR | MySQL | Create  additionnal MySQL accounts"
+  run_once: true
+  delegate_to: "{{  groups['mapr-ha-node'][1] }}"
+  mysql_user:
+    login_host: localhost
+    name: "{{ mysql_user }}"
+    password: "{{ mysql_passwd }}"
+    priv: "{{ mysql_db }}.*:ALL"
+    host: "{{ item }}"
+    state: present
+  with_items: "{{ mysql_additionnal_hosts }}"
+  when: "{{ groups['mapr-ha-node'] | length > 1 }}"
+
+- name: "MapR | MySQL | Check from client host mysql with the user \"{{ mysql_user }}\" (database: \"{{ mysql_db }}\")"
+  shell: mysql --database {{ mysql_db }} -h {{ item }} -u {{ mysql_user }} -p{{ mysql_passwd }} -e "select 123;"
+  delegate_to: "{{ item }}"
+  register: command_result
+  failed_when: "{{ '123' not in command_result.stdout_lines }}"
+  with_items: "{{ groups['mapr-ha-node'] }}"
+
+
+#- name: "MapR | MySQL | Enable replication if needed: {{ replication }}"
+#  shell: mysql --database {{ mysql_db }} -h {{ item }} -u {{ mysql_user }} -p{{ mysql_passwd }} -e "select 123;"
+#  delegate_to: "{{ item }}"
+#  register: command_result
+#  failed_when: "{{ '123' not in command_result.stdout_lines }}"
+#  when: "{{ replicated | default(false) }}"

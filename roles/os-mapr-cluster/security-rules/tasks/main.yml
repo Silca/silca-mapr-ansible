@@ -1,0 +1,104 @@
+- name: Openstack | Add ansible key/pair
+  run_once: true
+  os_keypair:
+    auth: "{{ os_cloud_auth }}"
+    state: present
+    name: ansible_keypair
+    public_key: "{{ lookup('file', '{{ inventory_dir }}/../common_vars/ssh-keys/root/enabled/ansible')}}"
+    endpoint_type: "{{ os_endpoint_type }}"
+  delegate_to: "{{ groups['ansible_admin_node'][0] }}"
+
+- name: Openstack | Add security group
+  run_once: true
+  os_security_group:
+    auth: "{{ os_cloud_auth }}"
+    state: present
+    name: "{{ os_security_groups }}"
+    description: security group for ansible servers
+    endpoint_type: "{{ os_endpoint_type }}"
+  delegate_to: "{{ groups['ansible_admin_node'][0] }}"
+
+- name: Openstack | Get  subnet facts
+  run_once: true
+  os_subnets_facts:
+    auth: "{{ os_cloud_auth }}"
+    filters:
+      name: "private_subnet_{{ tenant }}"
+    endpoint_type: "{{ os_endpoint_type }}"
+  delegate_to: "{{ groups['ansible_admin_node'][0] }}"
+
+- name: Openstack | Create minimal security rules
+  delegate_to: "{{ groups['ansible_admin_node'][0] }}"
+  run_once: true
+  os_security_group_rule:
+    auth: "{{ os_cloud_auth }}"
+    security_group: "{{ os_security_groups }}"
+    protocol: "{{ item.protocol }}"
+    direction: "{{ item.direction }}"
+    port_range_min: "{{ item.port_range_min }}"
+    port_range_max: "{{ item.port_range_max }}"
+    remote_ip_prefix: "{{ item.remote_ip_prefix }}"
+    endpoint_type: "{{ os_endpoint_type }}"
+  with_items:
+    - { protocol: icmp, direction: ingress, port_range_min: -1, port_range_max: -1, remote_ip_prefix: 0.0.0.0/0}
+    - { protocol: tcp, direction: ingress, port_range_min: 22, port_range_max: 22, remote_ip_prefix: 0.0.0.0/0}
+    - { protocol: tcp, direction: ingress, port_range_min: "{{ mcs.port }}", port_range_max: "{{ mcs.port }}", remote_ip_prefix: 0.0.0.0/0 }
+    - { protocol: tcp, direction: ingress, port_range_min: "{{ hue.webserver_port }}", port_range_max: "{{ hue.webserver_port }}", remote_ip_prefix: 0.0.0.0/0 }
+    - { protocol: tcp, direction: ingress, port_range_min: "{{ oozie.web_port }}", port_range_max: "{{ oozie.web_port }}", remote_ip_prefix: 0.0.0.0/0 }
+    - { protocol: tcp, direction: ingress, port_range_min: "{{ ha_proxy.admin_port }}", port_range_max: "{{ ha_proxy.admin_port }}", remote_ip_prefix: 0.0.0.0/0 }
+    - { protocol: tcp, direction: ingress, port_range_min: "{{ ha_proxy.kibana_port }}", port_range_max: "{{ ha_proxy.kibana_port }}", remote_ip_prefix: 0.0.0.0/0 }
+    - { protocol: tcp, direction: ingress, port_range_min: "{{ historyserver.http_port }}", port_range_max: "{{ historyserver.http_port }}", remote_ip_prefix: 0.0.0.0/0 }
+    - { protocol: tcp, direction: ingress, port_range_min: "{{ historyserver.rpc_port }}", port_range_max: "{{ historyserver.rpc_port }}", remote_ip_prefix: 0.0.0.0/0 }
+    - { protocol: tcp, direction: ingress, port_range_min: "{{ sqoop2.server_port }}", port_range_max: "{{ sqoop2.server_port }}", remote_ip_prefix: 0.0.0.0/0 }
+    - { protocol: tcp, direction: ingress, port_range_min: "{{ resourcemanager.http_port }}", port_range_max: "{{ resourcemanager.http_port }}", remote_ip_prefix: 0.0.0.0/0 }
+    - { protocol: tcp, direction: ingress, port_range_min: "{{ resourcemanager.port }}", port_range_max: "{{ resourcemanager.port }}", remote_ip_prefix: 0.0.0.0/0 }
+    - { protocol: tcp, direction: ingress, port_range_min: "{{ nfs.port_mapper }}", port_range_max: "{{ nfs.port_mapper }}", remote_ip_prefix: 0.0.0.0/0 }
+    - { protocol: tcp, direction: ingress, port_range_min: "{{ nfs.port_server }}", port_range_max: "{{ nfs.port_server }}", remote_ip_prefix: 0.0.0.0/0 }
+    - { protocol: tcp, direction: ingress, port_range_min: "{{ nfs.port_monitor }}", port_range_max: "{{ nfs.port_monitor }}", remote_ip_prefix: 0.0.0.0/0 }
+    - { protocol: tcp, direction: ingress, port_range_min: "{{ nfs.port_mgmt }}", port_range_max: "{{ nfs.port_mgmt }}", remote_ip_prefix: 0.0.0.0/0 }
+    - { protocol: tcp, direction: ingress, port_range_min: "{{ drill.http_port }}", port_range_max: "{{ drill.http_port }}", remote_ip_prefix: 0.0.0.0/0 }
+    - { protocol: tcp, direction: ingress, port_range_min: "{{ drill.rpc_user_port }}", port_range_max: "{{ drill.rpc_user_port }}", remote_ip_prefix: 0.0.0.0/0 }
+    - { protocol: tcp, direction: ingress, port_range_min: "{{ cldb.port }}", port_range_max: "{{ cldb.port }}", remote_ip_prefix: 0.0.0.0/0 }
+    - { protocol: tcp, direction: ingress, port_range_min: "{{ mfs.port_1 }}", port_range_max: "{{ mfs.port_1 }}", remote_ip_prefix: 0.0.0.0/0 }
+    - { protocol: tcp, direction: ingress, port_range_min: "{{ mfs.port_2 }}", port_range_max: "{{ mfs.port_2 }}", remote_ip_prefix: 0.0.0.0/0 }
+    - { protocol: tcp, direction: ingress, port_range_min: "{{ mfs.port_3 }}", port_range_max: "{{ mfs.port_3 }}", remote_ip_prefix: 0.0.0.0/0 }
+    - { protocol: tcp, direction: ingress, port_range_min: "{{ hive.hs2_port }}", port_range_max: "{{ hive.hs2_port }}", remote_ip_prefix: 0.0.0.0/0 }
+    - { protocol: tcp, direction: ingress, port_range_min: "{{ spark.ui_ports.start }}", port_range_max: "{{ spark.ui_ports.end }}", remote_ip_prefix: 0.0.0.0/0 }
+    - { protocol: tcp, direction: ingress, port_range_min: "{{ spark.historyserver_port }}", port_range_max: "{{ spark.historyserver_port }}", remote_ip_prefix: 0.0.0.0/0 }
+    - { protocol: tcp, direction: ingress, port_range_min: "{{ rstudio.web_port }}", port_range_max: "{{ rstudio.web_port }}", remote_ip_prefix: 0.0.0.0/0 }
+    - { protocol: tcp, direction: ingress, port_range_min: "{{ opentsdb.port }}", port_range_max: "{{ opentsdb.port }}", remote_ip_prefix: 0.0.0.0/0 }
+    - { protocol: tcp, direction: ingress, port_range_min: "{{ grafana.port }}", port_range_max: "{{ grafana.port }}", remote_ip_prefix: 0.0.0.0/0 }
+    - { protocol: tcp, direction: ingress, port_range_min: "{{ kibana.port }}", port_range_max: "{{ kibana.port }}", remote_ip_prefix: 0.0.0.0/0 }
+    - { protocol: tcp, direction: ingress, port_range_min: "{{ ha_proxy.mysql_port }}", port_range_max: "{{ ha_proxy.mysql_port }}", remote_ip_prefix: 0.0.0.0/0 }
+    - { protocol: tcp, direction: ingress, port_range_min: "{{ hive.hivemeta_port }}", port_range_max: "{{ hive.hivemeta_port }}", remote_ip_prefix: 0.0.0.0/0 }
+
+- name: Openstack | Create specific security rules
+  delegate_to: "{{ groups['ansible_admin_node'][0] }}"
+  run_once: true
+  os_security_group_rule:
+    auth: "{{ os_cloud_auth }}"
+    security_group: "{{ os_security_groups }}"
+    protocol: "tcp"
+    direction: "ingress"
+    port_range_min: "{{ item }}"
+    port_range_max: "{{ item }}"
+    remote_ip_prefix: "0.0.0.0/0"
+    endpoint_type: "{{ os_endpoint_type }}"
+  with_items: "{{ additionnal_ports }}"
+
+  #{% for port in "{{ additionnal_ports }}" %}
+  #  - "{ protocol: tcp, direction: ingress, port_range_min: {{ port }}, port_range_max: {{ port }}, remote_ip_prefix: 0.0.0.0/0 }"
+  #{% endfor %}
+
+## Need to use 0-65535 and not -1 to-1 because Ansible module don't support Update (with port_range_min
+## and remote _ip_prefix)
+- name: Openstack | Allow communication between same security groups
+  delegate_to: "{{ groups['ansible_admin_node'][0] }}"
+  run_once: true
+  os_security_group_rule:
+    auth: "{{ os_cloud_auth }}"
+    security_group: "{{ os_security_groups }}"
+    protocol: tcp
+    direction: ingress
+    remote_group: "{{ os_security_groups }}"
+    endpoint_type: "{{ os_endpoint_type }}"

@@ -1,0 +1,25 @@
+#FIXME ADD joker for versioned jars
+hive_jars: [
+  "/opt/mapr/hadoop/hadoop-{{ mapr_hadoop_version }}/etc/hadoop",
+  "/opt/mapr/hadoop/hadoop-{{ mapr_hadoop_version }}/share/hadoop/common/lib/*",
+  "/opt/mapr/hadoop/hadoop-{{ mapr_hadoop_version }}/share/hadoop/common/*",
+  "/opt/mapr/hadoop/./hadoop-{{ mapr_hadoop_version }}/share/hadoop/mapreduce/*",
+  "/opt/mapr/hadoop/hadoop-{{ mapr_hadoop_version }}/share/hadoop/yarn/*",
+  "/opt/mapr/hive/hive-{{ mapr_hive_version }}/lib/accumulo-core-1.6.0.jar",
+  "/opt/mapr/hive/hive-{{ mapr_hive_version }}/lib/hive-contrib-1.2.0-mapr-1508.jar",
+  "/opt/mapr/hive/hive-{{ mapr_hive_version }}/lib/*"
+]
+
+#FIXME ADD joker for versioned jars
+datanucleus_jars: [
+  "/opt/mapr/hive/hive-{{ mapr_hive_version }}/conf/hive-site.xml",
+  "/opt/mapr/hive/hive-{{ mapr_hive_version }}/lib/datanucleus-api-jdo-4.2.1.jar",
+  "/opt/mapr/hive/hive-{{ mapr_hive_version }}/lib/datanucleus-core-4.1.6.jar",
+  "/opt/mapr/hive/hive-{{ mapr_hive_version }}/lib/datanucleus-rdbms-4.1.7.jar"
+]
+
+# Spark configuration tuning for Dynamic Allocation
+spark_enable_dynamic_allocation: true
+spark_shuffle_service_enabled: true
+spark_dynamicAllocation_minExecutors: 5
+spark_executor_instances: 0

@@ -1,0 +1,9 @@
+- name: Openstack | Configure vm ( yum repositories)
+  include: configure-vms.yml
+  tags: "configure-vms"
+
+- name: Openstack | Configure vm ( yum repositories)
+  include: format-disks.yml
+
+- name: Openstack | Resize root fs, Restart and Wait for reboot
+  include: configure-rootfs.yml

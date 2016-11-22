@@ -1,0 +1,11 @@
+\{
+    "name": "hive",
+    "config":
+        \{
+          "type" : "hive",
+          "enabled" : false,
+          "configProps" : \{
+            "hive.metastore.uris" : "thrift://{{ groups['mapr-ha-node'][0] }}:{{ hive.hivemeta_port }}"
+          \}
+        \}
+\}

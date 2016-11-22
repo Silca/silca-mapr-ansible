@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<!-- {{ ansible_managed }} -->
+<configuration>
+
+    <property>
+        <name>ssl.client.truststore.location</name>
+        <value>{{ mcs_ssl_truststore_file }}</value>
+        <description>Truststore to be used by clients like distcp. Must be
+            specified.
+        </description>
+    </property>
+
+    <property>
+        <name>ssl.client.truststore.password</name>
+        <value>{{ ssl_stores_password }}</value>
+        <description>Optional. Default value is "".
+        </description>
+    </property>
+
+    <property>
+        <name>ssl.client.truststore.type</name>
+        <value>jks</value>
+        <description>Optional. The keystore file format, default value is "jks".
+        </description>
+    </property>
+
+    <property>
+        <name>ssl.client.truststore.reload.interval</name>
+        <value>10000</value>
+        <description>Truststore reload check interval, in milliseconds.
+            Default value is 10000 (10 seconds).
+        </description>
+    </property>
+
+    <property>
+        <name>ssl.client.keystore.location</name>
+        <value>{{ mcs_ssl_keystore_file }}</value>
+        <description>Keystore to be used by clients like distcp. Must be
+            specified.
+        </description>
+    </property>
+
+    <property>
+        <name>ssl.client.keystore.password</name>
+        <value>{{ ssl_stores_password }}</value>
+        <description>Optional. Default value is "".
+        </description>
+    </property>
+
+    <property>
+        <name>ssl.client.keystore.keypassword</name>
+        <value>{{ ssl_stores_password }}</value>
+        <description>Optional. Default value is "".
+        </description>
+    </property>
+
+    <property>
+        <name>ssl.client.keystore.type</name>
+        <value>jks</value>
+        <description>Optional. The keystore file format, default value is "jks".
+        </description>
+    </property>
+
+</configuration>

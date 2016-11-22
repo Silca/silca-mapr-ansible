@@ -1,0 +1,25 @@
+# {{ ansible_managed  }}
+
+[base]
+name=CentOS-$releasever - Base
+baseurl=http://{{ pulp_ip }}/pulp/repos/centos-6-base-autoupdate/
+enabled=1
+gpgcheck=0
+protect=1
+sslverify=0
+
+[extras]
+name=CentOS-$releasever - Extras
+baseurl=http://{{ pulp_ip }}/pulp/repos/centos-6-extras-autoupdate/
+enabled=1
+gpgcheck=0
+protect=1
+sslverify=0
+
+[updates]
+name=CentOS-$releasever - Updates
+baseurl=http://{{ pulp_ip }}/pulp/repos/centos-6-updates-autoupdate/
+enabled=1
+gpgcheck=0
+protect=1
+sslverify=0

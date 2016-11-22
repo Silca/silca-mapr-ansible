@@ -1,0 +1,56 @@
+- name: Virsh | Net | Gathering  active net
+  run_once: true
+  become: true
+  delegate_to: localhost
+  command: virsh net-list --name
+  register: netlist
+
+- name: Virsh | Net | Drop net
+  run_once: true
+  become: true
+  delegate_to: localhost
+  command: virsh net-destroy {{ kvm_netname }}
+  when: "'{{ kvm_netname }}' in netlist.stdout"
+
+- name: KVM | Gathering  inactive net
+  run_once: true
+  become: true
+  delegate_to: localhost
+  command: virsh net-list --inactive
+  register: netlist_inactive
+
+- name: KVM | Net | Delete net config
+  run_once: true
+  become: true
+  delegate_to: localhost
+  command: virsh net-undefine {{ kvm_netname }}
+  when: "'{{ kvm_netname }}' in netlist_inactive.stdout"
+
+- name: KVM | Net | Create Net
+  run_once: true
+  become: true
+  delegate_to: localhost
+  virt_net: command=define name=os-net xml='{{ lookup("template", "net.xml.j2") }}'
+
+- name: KVM | Net | Make net autostart
+  run_once: true
+  become: true
+  delegate_to: localhost
+  command: virsh net-autostart {{ kvm_netname }}
+
+- name: KVM | Net | Start Net
+  run_once: true
+  become: true
+  delegate_to: localhost
+  command: virsh net-start {{ kvm_netname }}
+
+- name: KVM | Net | Restart Squid
+  run_once: true
+  become: true
+  delegate_to: localhost
+  service: name=squid state=restarted
+
+- name: KVM | Net | Ensure Squid is here
+  run_once: true
+  delegate_to: localhost
+  wait_for: port="{{ http_proxy_port }}" host="{{ bridge_ip }}"

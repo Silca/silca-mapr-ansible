@@ -1,0 +1,40 @@
+- name: KVM | Domain | Gathering list of vms
+  delegate_to: localhost
+  run_once: true
+  virt: command=list_vms state=running
+  register: running_vms
+  tags: kvm
+
+- name: KVM | Domain | Destroy vm
+  delegate_to: localhost
+  virt: name="{{ inventory_hostname }}" command=destroy
+  when: "'{{ inventory_hostname }}' in running_vms.list_vms"
+
+- name: KVM | Domain | Gathering list of vms
+  run_once: true
+  delegate_to: localhost
+  virt: command=list_vms
+  register: defined_vms
+
+- name: KVM | Domain | Undefine vm
+  delegate_to: localhost
+  virt: name="{{ inventory_hostname }}" command=undefine
+  when: "'{{ inventory_hostname }}' in defined_vms.list_vms"
+
+- name: KVM | Domain | Define VMS
+  delegate_to: localhost
+  virt:
+    name: "{{ inventory_hostname }}"
+    command: define
+    xml: "{{ lookup('template', 'domain-template.xml.j2') }}"
+
+- name: KVM | Domain | Start VMS
+  delegate_to: localhost
+  become: true
+  virt:
+    name: "{{ inventory_hostname }}"
+    command: start
+
+- name: KVM | Domain | Dirty hack (centos 6) !! Wait for sshd reboot
+  delegate_to: localhost
+  wait_for: port=22 host="{{ ansible_host }}" delay=20

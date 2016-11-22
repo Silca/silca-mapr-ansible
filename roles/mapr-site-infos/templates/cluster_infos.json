@@ -1,0 +1,140 @@
+{
+  "infos": {
+    "cluster_name": "{{ mapr.cluster_name }}",
+    "mep": "{{ mapr_mep }}",
+    "core": "{{ mapr_release_version }}",
+    "subnet": "{{ ansible_default_ipv4.network }}/{{ subnet_prefix }}",
+    "num_mapr_nodes": {{ groups['mapr-client-node'] | union(groups['mapr-compute-node']) | length }},
+    "last_partial_update": "{{ ansible_date_time.date }}",
+    "availability_zone": "{{ os_availability_zone | default('undefined') }}",
+    "tenant": "{{ tenant}}",
+    "nodes":
+        [
+            {% for node in groups['mapr-client-node'] %}
+                {
+                  "name": "{{ node }}",
+                  "ip": "{{ hostvars[node].ansible_default_ipv4.address }}",
+                  "type": "mapr-node",
+                  "subtype": "master",
+                  "hardware": {
+                    "cpus": {{ hostvars[node].ansible_processor_vcpus }},
+                    "ram": {{ hostvars[node].ansible_memtotal_mb }},
+                    "os":{
+                      "distribution": "{{ hostvars[node].ansible_distribution }}",
+                      "version": "{{ hostvars[node].ansible_distribution_version }}"
+                    }
+                  }
+                },
+            {% endfor %}
+            {% for node in groups['mapr-compute-node'] %}
+                {
+                  "name": "{{ node }}",
+                  "ip": "{{ hostvars[node].ansible_default_ipv4.address }}",
+                  "type": "mapr-node", "subtype": "compute",
+                  "hardware": {
+                    "cpus": {{ hostvars[node].ansible_processor_vcpus }},
+                    "ram": {{ hostvars[node].ansible_memtotal_mb }},
+                    "os":{
+                      "distribution": "{{ hostvars[node].ansible_distribution }}",
+                      "version": "{{ hostvars[node].ansible_distribution_version }}"
+                    }
+                  }
+                },
+            {% endfor %}
+            {% for node in groups['mapr-ha-node'] %}
+                {
+                  "name": "{{ node }}",
+                  "ip": "{{ hostvars[node].ansible_default_ipv4.address }}",
+                  "type": "ha-node",
+                  "primary": {{ loop.first | ternary('true', 'false')}},
+                  "hardware": {
+                    "cpus": {{ hostvars[node].ansible_processor_vcpus }},
+                    "ram": {{ hostvars[node].ansible_memtotal_mb }},
+                    "os":{
+                      "distribution": "{{ hostvars[node].ansible_distribution }}",
+                      "version": "{{ hostvars[node].ansible_distribution_version }}"
+                    }
+                  }
+                }
+              {% if not loop.last%},{% endif %}
+            {% endfor %}
+        ],
+    "services": {
+        "mcs": {
+          "version": "{{ mapr_drill_version }}",
+          "ports": [{{mcs.port}}],
+          "nodes": "{{ groups['mapr-webserver'] | join(',') }}"
+        },
+        "drill": {
+          "version": "{{ mapr_drill_version }}",
+            "ports": [ {{ drill.http_port  }}, {{ drill.rpc_user_port  }}],
+            "nodes": "{{ groups['mapr-drill'] | join(',') }}"
+        },
+        "grafana": {
+            "version": "{{ mapr_grafana_version }}",
+            "ports": [{{ grafana.port  }}],
+            "nodes": "{{ groups['mapr-monitoring'][0] }}"
+        },
+        "kibana": {
+          "version": "N1",
+          "ports": [{{ kibana.port  }}],
+          "nodes": "{{ groups['mapr-monitoring'][0] }}"
+        },
+        "hbase": {
+            "version": "{{ mapr_hbase_version }}",
+            "nodes": "{{ groups['mapr-hbase-client'] | join(',') }}"
+        },
+        "hive": {
+            "version": "{{ mapr_hive_version }}",
+            "ports": [{{ hive.hs2_port  }}],
+            "nodes": "{{ groups['mapr-hive'] | join(',') }}"
+        },
+        "httpfs": {
+            "version": "{{ mapr_httpfs_version }}",
+            "nodes": "{{ groups['mapr-httpfs'] | join(',') }}"
+        },
+        "hue": {
+            "version": "{{ mapr_hue_version }}",
+            "ports": [{{ hue.webserver_port  }}],
+            "nodes": "{{ groups['mapr-hue'] | join(',') }}"
+        },
+        "history_server": {
+            "ports": [{{ historyserver.http_port  }}, {{ historyserver.rpc_port }}],
+            "nodes": "{{ groups['mapr-historyserver'] | join(',') }}"
+        },
+        "resource_manager": {
+            "ports": [{{ resourcemanager.http_port  }}, {{ resourcemanager.port  }}],
+            "nodes": "{{ groups['mapr-resourcemanager'] | join(',') }}"
+        },
+        "oozie": {
+            "version": "{{ mapr_oozie_version }}",
+            "ports": [{{ oozie.web_port  }}],
+            "nodes": "{{ groups['mapr-oozie'] | join(',') }}"
+        },
+        "pig": {
+            "version": "{{ mapr_pig_version }}",
+            "nodes": "{{ groups['mapr-pig'] | join(',') }}"
+        },
+        "r": {
+          "version": "{{ mapr_r_version }}",
+          "nodes": "{{ groups['mapr-r'] | join(',') }}"
+        },
+        "spark": {
+          "version": "{{ mapr_spark_version }}",
+          "ports": [{{ spark.ui_ports.start  }}, {{ spark.historyserver_port  }}],
+          "nodes": "{{ groups['mapr-spark'] | join(',') }}"
+        },
+        "sqoop_2": {
+          "version": "{{ mapr_sqoop2_version }}",
+          "ports": [{{ sqoop2.server_port  }}],
+          "nodes": "{{ groups['mapr-sqoop2'] | join(',') }}"
+        },
+        "rstudio_server": {
+          "version": "{{ rstudio_server_version }}",
+          "ports": [{{ rstudio.web_port  }}],
+          "nodes": "{{ groups['mapr-rstudio'] | join(',') }}"
+        }
+    }
+
+  }
+}

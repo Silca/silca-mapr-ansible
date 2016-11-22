@@ -1,0 +1,16 @@
+---
+
+- name: Ldap client | Packages installation
+  include: install-packages.yml
+  tags: ["ldap-install-packages"]
+
+- name: Ldap client | Prepare ldap environment
+  include: preparation.yml
+  tags: ["ldap-configuration"]
+
+
+- name: Ldap client | Client configuration
+  include: client-configuration.yml
+  tags: ["ldap-client-configuration"]
+
+

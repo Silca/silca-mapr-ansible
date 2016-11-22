@@ -1,0 +1,21 @@
+
+- name: Virsh | Prerequisite
+  include: reset_prerequisites.yml
+  tags: "kvm-reset-prerequisite"
+
+- name: Virsh | Configure Metadata
+  include: reset_metadata.yml
+  tags: "kvm-reset-configure-metadata"
+
+- name: Virsh | Configure Network
+  include: reset_network.yml
+  tags: "kvm-reset-configure-networks"
+
+- name: Virsh | Configure Volumes
+  include: reset_volumes.yml
+  tags: "kvm-reset-configure-volumes"
+
+- name: Virsh | Configure Domains
+  include: reset_domains.yml
+  tags: "kvm-reset-configure-domains"
+

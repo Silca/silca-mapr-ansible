@@ -1,0 +1,23 @@
+- name: MapR | Post Install | Give full permission to mapr user
+  command: /opt/mapr/bin/maprcli acl edit -type cluster -user mapr:fc
+  when: "{{ inventory_hostname == groups['mapr-client-node'][0] }}"
+
+- name: MapR | Post Install | Enable all feature for the cluster ( for version upgrade )
+  command: /opt/mapr/bin/maprcli cluster feature enable -all
+  when: "{{ inventory_hostname == groups['mapr-client-node'][0] }}"
+
+- name: MapR | Post Install | Get the full version id from the cluster
+  command: cat /opt/mapr/MapRBuildVersion
+  register: mapr_full_version
+  when: "{{ inventory_hostname == groups['mapr-client-node'][0] }}"
+
+- name: MapR | Post Install | Apply new version info to avoid mapr alarm
+  command: /opt/mapr/bin/maprcli config save -values "{ mapr.targetversion {{ ":" }} "{{ mapr_full_version.stdout }}" }"
+  when: "{{ inventory_hostname == groups['mapr-client-node'][0] }}"
+
+- name: MapR | Post Install | Install Python dependencies
+  package: name="{{ item }}"
+  with_items:
+   - numpy
+   - scipy
+  tags: package

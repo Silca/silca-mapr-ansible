@@ -1,0 +1,34 @@
+<domain type='kvm'>
+  <name>{{ inventory_hostname }}</name>
+  <vcpu placement='static'>{{ vcpus | default(8) }}</vcpu>
+  <memory unit='MiB'>{{ ram }}</memory>
+  <os>
+    <type>hvm</type>
+  </os>
+  <devices>
+    <disk type='file' device='disk'>
+      <driver name="qemu" type="qcow2"/>
+      <source file='{{ kvm_volume_dir }}/{{ inventory_hostname }}-system.qcow2'/>
+      <target bus="virtio" dev="vda"/>
+    </disk>
+    <disk type='file' device='disk'>
+      <driver name="qemu" type="raw"/>
+      <source file='{{ kvm_metadata_dir }}/disk.config_{{ inventory_hostname }}'/>
+      <target bus="virtio" dev="vdb"/>
+    </disk>
+    {% for n in range(1, volume_data_number + 1 ) %}
+       <disk type='file' device='disk'>
+             <driver name="qemu" type="qcow2"/>
+             <source file='{{ kvm_volume_dir }}/{{ inventory_hostname }}-data-{{ n }}.qcow2'/>
+             <target bus="virtio" dev="vd{{ (n + 2) | volume_name }}"/>
+       </disk>
+    {% endfor %}
+    <interface type='network'>
+      <source network='{{ kvm_netname }}'/>
+      <mac address='{{ inventory_hostname | mac_address }}'/>
+    </interface>
+    <serial type="file">
+      <source path="{{ kvm_log_dir }}/{{ inventory_hostname }}.log"/>
+    </serial>
+  </devices>
+</domain>

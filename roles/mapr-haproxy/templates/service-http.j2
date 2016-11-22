@@ -1,0 +1,12 @@
+
+listen {{ item.service.name }} :{{ item.service.haproxyport }}
+    mode http
+{% for acl_value in item.service.acls|default([]) %}
+    acl {{ acl_value }}
+{% endfor %}
+{% for http_request_value in item.service.httprequests|default([]) %}
+    http-request {{ http_request_value }}
+{% endfor %}
+{% for server_node in item.service.servers|default([]) %}
+    server {{ server_node }} {{ server_node }}:{{ item.service.serverport }} check
+{% endfor %}

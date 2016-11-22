@@ -1,0 +1,12 @@
+services=oozie:1:cldb
+service.displayname=Oozie
+service.command.start=/opt/mapr/oozie/oozie-{{ mapr_oozie_version }}/bin/oozied.sh start
+service.command.stop=/opt/mapr/oozie/oozie-{{ mapr_oozie_version }}/bin/oozied.sh stop
+service.command.type=BACKGROUND
+service.command.monitorcommand=/opt/mapr/oozie/oozie-{{ mapr_oozie_version }}/bin/oozied.sh status
+service.port={{ oozie.web_port }}
+service.ui.port={{ oozie.web_port }}
+service.uri=/oozie
+service.logs.location=/opt/mapr/oozie/oozie-{{ mapr_oozie_version }}/logs
+service.process.type=JAVA
+service.env="MAPR_MAPREDUCE_MODE=default"

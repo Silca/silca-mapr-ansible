@@ -1,0 +1,14 @@
+dependencies:
+  - { role: add-extra-groupvars }
+  - { role: mapr-vars }
+  - { role: mysql-operations/database,
+      mysql_db: "{{ hive.db_name }}",
+      tags: ["mapr-mysql-hive", "mapr-mysql-database-hive"]
+    }
+  - { role: mysql-operations/account,
+      mysql_db: "{{ hive.db_name }}",
+      mysql_user: "{{ hive.db_user }}",
+      mysql_passwd: "{{ hive.db_passwd }}",
+      mysql_additionnal_hosts: "{{ additionnal_hive_metastore_hosts }}",
+      tags: ["mapr-mysql-hive", "mapr-mysql-account-hive"]
+    }

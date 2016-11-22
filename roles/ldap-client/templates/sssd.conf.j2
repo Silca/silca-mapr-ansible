@@ -1,0 +1,78 @@
+#{{ ansible_managed }}
+
+[domain/LDAP]
+
+debug_level = 2
+id_provider = ldap
+auth_provider = ldap
+chpass_provider = ldap
+ldap_schema = rfc2307
+ldap_uri = {{ ldap_server_protocol }}://{{ ldap_server_name }}:{{ ldap_server_port }}
+
+ldap_search_base = ou={{ ldap_bind_dn_ou}},o={{ ldap_bind_dn_o }}
+ldap_user_search_base = ou=people,ou={{ ldap_bind_dn_ou}},o={{ ldap_bind_dn_o }}
+ldap_group_search_base = ou=group,ou={{ ldap_bind_dn_ou}},o={{ ldap_bind_dn_o }}
+ldap_netgroup_search_base = ou=netgroup,ou={{ ldap_bind_dn_ou}},o={{ ldap_bind_dn_o }}
+ldap_default_bind_dn = cn=lda_root_account,ou=profile,ou={{ ldap_bind_dn_ou }},o={{ ldap_bind_dn_o }}
+
+
+{% if (groups['mapr-mock-ldapserver'] | length > 0) %}
+ldap_default_authtok = {{ vault_ldap_bind_password }}
+{% else %}
+ldap_default_authtok = {{ vault_ldap_default_authtok }}
+ldap_default_authtok_type = obfuscated_password
+{% endif %}
+
+enumerate = true
+cache_credentials = true
+
+ldap_search_timeout = 6
+ldap_enumeration_search_timeout = 16
+ldap_network_timeout = 4
+ldap_enumeration_refresh_timeout = 300
+
+ldap_user_object_class = posixAccount
+ldap_user_name = uid
+ldap_user_uid_number = uidNumber
+ldap_user_gid_number = gidNumber
+ldap_user_home_directory = homeDirectory
+ldap_user_gecos = gecos
+ldap_user_shell = loginShell
+
+ldap_group_object_class = posixGroup
+ldap_group_name = cn
+ldap_group_gid_number = gidNumber
+ldap_group_member = memberuid
+
+ldap_netgroup_object_class = nisNetgroup
+ldap_netgroup_name = cn
+ldap_netgroup_triple = nisNetgroupTriple
+
+# Ne pas ajouter ldap_tls_reqcert avec un certificat autosigné
+{% if (groups['mapr-mock-ldapserver'] | length == 0) %}
+ldap_tls_reqcert = allow
+{% endif %}
+
+ldap_id_use_start_tls = true
+ldap_tls_cacertdir = /etc/openldap/cacerts
+pam_pwd_expiration_warning = 7
+
+[sssd]
+config_file_version = 2
+reconnection_retries = 3
+sbus_timeout = 30
+services = nss, pam
+domains = LDAP
+
+[nss]
+filter_users = root
+filter_groups = root
+reconnection_retries = 3
+entry_cache_timeout = 900
+entry_cache_nowait_percentage = 75
+
+[pam]
+reconnection_retries = 3
+offline_credentials_expiration = 2
+offline_failed_login_attempts = 5
+offline_failed_login_delay = 5

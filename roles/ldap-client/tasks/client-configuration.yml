@@ -1,0 +1,144 @@
+---
+
+- name: Ldap client | ldap | authorization with authconfig
+  command: |
+    /usr/sbin/authconfig
+      --enableforcelegacy
+      --enableldap
+      --enableldapauth
+      --disablenis
+      --enablecache
+      --usemd5
+      --useshadow
+      --ldapserver="{{ ldap_server_protocol }}://{{ ldap_server_name }}:{{ ldap_server_port }}"
+      --ldapbasedn="ou={{ ldap_dn_ou }},o={{ ldap_dn_o }}"
+      --updateall
+
+- name: Ldap client | ldap | Disable pam crond
+  lineinfile:
+     dest: "/etc/pam.d/crond"
+     regexp : '^.*(account[\s]+required[\s\+]+pam_access.so).*$'
+     state: present
+     line: '#\1 #Commented by Ansible'
+     backrefs: yes
+     backup: yes
+
+- name: Ldap client | ldap | Copy valorized configuration files with auto backup
+  template:
+     src: "{{ item.src }}"
+     dest: "{{ item.dest }}"
+     backup: yes
+  with_items:
+     - { src : "sssd.j2",  dest : "/etc/sysconfig/sssd" }
+     - { src : "nsswitch.conf.j2",  dest : "/etc/nsswitch.conf" }
+     - { src : "pam_ldap.conf.j2",  dest : "/etc/pam_ldap.conf" }
+     - { src : "permissive_access.conf.j2",    dest : "/etc/security/access.conf" }
+     - { src : "password-auth-ac.j2",  dest : "/etc/pam.d/password-auth-ac" }
+     - { src : "system-auth-ac.j2", dest : "/etc/pam.d/system-auth-ac" }
+
+- name: 'Restarting SSSD and NSCD'
+  template:
+    src: sssd.conf.j2
+    dest: /etc/sssd/sssd.conf
+    backup: yes
+    owner: root
+    group: root
+    mode: 0600
+
+- name: Ldap client | ldap | Ensure password link no longer exists
+  file:
+     path: "/etc/pam.d/password-auth-ac"
+     state: absent
+
+- name: Ldap client | ldap | Link password-auth-ac
+  file:
+     src: "/etc/pam.d/system-auth-ac"
+     dest: "/etc/pam.d/password-auth-ac"
+     state: link
+
+- name: Ldap client | ldap | Change target directories permissions
+  file:
+     path: "{{ item.path }}"
+     owner: "{{ item.owner }}"
+     group: "{{ item.group }}"
+     mode: "{{ item.mode }}"
+     recurse: "{{ item.recursive }}"
+  with_items:
+     - { path: "/etc/skel", owner: root, group: root, mode: "u+r", recursive: true }
+     - { path: "/etc/security", owner: root, group: root, mode: "u+r", recursive: true }
+     - { path: "/etc/pam.d", owner: root, group: root, mode: "u+r", recursive: true }
+     - { path: "/etc/sudoers.d", owner: root, group: root, mode: "u+r", recursive: true }
+     - { path: "/etc/openldap", owner: root, group: ldap, mode: "g+r", recursive: true }
+     - { path: "/etc/openldap", owner: root, group: ldap, mode: "g+rx", recursive: false }
+     - { path: "/etc/openldap/cacerts", owner: root, group: ldap, mode: "g+rx", recursive: false }
+
+- name: Ldap client | ldap | Configuration files list.
+  shell: find {{ item }}
+  with_items:
+     - "/etc/pam_ldap.conf*"
+     - "/etc/security/access.conf*"
+     - "/etc/pam.d/password-auth*"
+     - "/etc/pam.d/password-auth*"
+     - "/etc/nsswitch.conf*"
+  register: conf_list_files
+
+- name: Ldap client | ldap | Change owner to root
+  command: "/bin/chown root:root {{ item.stdout }}"
+  with_items: "{{ conf_list_files.results }}"
+
+
+- name: Ldap client | ldap | Remove nscd files
+  file:
+     path: "{{ item }}"
+     state: absent
+  with_items:
+     - "/var/lock/subsys/nscd"
+     - "/var/run/nscd/nscd.pid"
+     - "/var/run/nscd/socket"
+
+- name: Ldap client | ldap | Start nscd
+  service: name=nscd state=restarted
+
+- name: 'Disabling NSLCD'
+  service: name=nslcd state=stopped enabled=no
+
+- name: Ldap client | ldap | Set definitive access.conf
+  template:
+     src: "access.conf.j2"
+     dest: "/etc/security/access.conf"
+
+- name: Ldap client | ldap | Activate nscd service
+  service: name=nscd enabled=true state=restarted
+
+- name: Ldap client | ldap | Activate sssd service
+  service: name=sssd enabled=true state=restarted
+
+- name: Ldap client | ldap | Control LDAP functionnality with search request
+  command: ldapsearch -w {{ vault_ldap_bind_password }} -D "cn=lda_root_account,ou=profile,ou={{ ldap_bind_dn_ou }},o={{ ldap_bind_dn_o }}" -b ou=People,ou={{ ldap_bind_dn_ou }},o={{ ldap_bind_dn_o }} uid="{{ item.user}}"
+  register: search_result
+  failed_when: "'{{ item.password}}' not in search_result.stdout"
+  with_items:
+    - { user: maprldap, password: 'e1NTSEF9bFN1Qmp3Q1pGRk9aeTdFbzllNzg1MzUzNkxxZ2l3R0k='}
+    - { user: luigildap, password: 'e1NTSEF9NmlFcW9JLy9mRk05R3pMQ01mcVBMTGMxY3NWS2JLekU='}
+  when: "{{ groups['mapr-mock-ldapserver'] | length > 0 }}"
+
+- name: Ldap client | ldap | Control LDAP functionnality with search request with LDAP default config
+  command: ldapsearch -w {{ vault_ldap_bind_password }} -D "cn=lda_root_account,ou=profile,ou={{ ldap_bind_dn_ou }},o={{ ldap_bind_dn_o }}" uid="{{ item.user}}"
+  register: search_result
+  failed_when: "'{{ item.password}}' not in search_result.stdout"
+  with_items:
+    - { user: maprldap, password: 'e1NTSEF9bFN1Qmp3Q1pGRk9aeTdFbzllNzg1MzUzNkxxZ2l3R0k='}
+    - { user: luigildap, password: 'e1NTSEF9NmlFcW9JLy9mRk05R3pMQ01mcVBMTGMxY3NWS2JLekU='}
+  when: "{{ groups['mapr-mock-ldapserver'] | length > 0 }}"
+
+
+- name: Ldap Client | ldap | Control maprldap presence in passwd from pam
+  shell: getent passwd
+  register: getent_out
+  failed_when: "'maprldap' not in getent_out.stdout"
+  when: "{{ groups['mapr-mock-ldapserver'] | length > 0 }}"
+
+- name: Ldap Client | ldap | Activate ssh login with password
+  lineinfile: dest=/etc/ssh/sshd_config regexp="PasswordAuthentication no" line="PasswordAuthentication yes"
+  notify: restart sshd
+  tags: sshconfig

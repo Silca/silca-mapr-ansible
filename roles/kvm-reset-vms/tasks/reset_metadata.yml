@@ -1,0 +1,44 @@
+- name: KVM | Create metastore structure for CloudInit
+  delegate_to: localhost
+  file: path="{{ item }}" state=directory mode=0777
+  with_items:
+    - "{{ kvm_metadata_dir }}"
+    - "{{ kvm_metadata_dir }}/config_{{ inventory_hostname }}"
+    - "{{ kvm_metadata_dir }}/config_{{ inventory_hostname }}/openstack"
+    - "{{ kvm_metadata_dir }}/config_{{ inventory_hostname }}/openstack/2012-08-10"
+
+
+- name: KVM | Create simlink for latest metadata
+  delegate_to: localhost
+  file:
+    src: "{{ kvm_metadata_dir }}/config_{{ inventory_hostname }}/openstack/2012-08-10"
+    dest: "{{ kvm_metadata_dir }}/config_{{ inventory_hostname }}/openstack/latest"
+    state: link
+    mode: 0777
+
+- name: KVM | Templating user_data for KVM images
+  delegate_to: localhost
+  template: src=user_data.j2 dest="{{ kvm_metadata_dir }}/config_{{ inventory_hostname }}/openstack/2012-08-10/user_data"
+
+- name: KVM | Templating meta_data for KVM images
+  delegate_to: localhost
+  template: src=meta_data.json.j2 dest="{{ kvm_metadata_dir }}/config_{{ inventory_hostname }}/openstack/2012-08-10/meta_data.json"
+
+- name: KVM | Make config drive
+  delegate_to: localhost
+  command: virt-make-fs config_{{ inventory_hostname }} disk.config_{{ inventory_hostname }}
+  args:
+    chdir: "{{ kvm_metadata_dir }}"
+
+
+- name: KVM | Make config drive, Configure permission
+  delegate_to: localhost
+  become: true
+  file: path="{{ kvm_metadata_dir }}/disk.config_{{ inventory_hostname }}" mode=0777
+
+- name: KVM | Make Label for config drive
+  delegate_to: localhost
+  become: true
+  command: e2label disk.config_{{ inventory_hostname }} config-2
+  args:
+    chdir: "{{ kvm_metadata_dir }}"

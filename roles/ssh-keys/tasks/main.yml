@@ -1,0 +1,24 @@
+---
+
+- name: "SSH Keys | Check if directory for key to enable exists"
+  delegate_to: localhost
+  stat: path="{{ ssh_keys_enabled_directory }}/{{ user }}"
+  register: user_keys_enabled_directory
+
+- name: "SSH Keys | Enable administrators"
+  authorized_key: user="{{ user }}" key="{{ lookup('file', item )}}" manage_dir=yes
+  with_fileglob:
+    - "{{ ssh_keys_enabled_directory }}/{{ user }}/*"
+  when: "{{ user_keys_enabled_directory.stat.exists == true }} "
+
+
+- name: "SSH Keys | Check if directory for key to disable exists"
+  delegate_to: localhost
+  stat: path="{{ ssh_keys_disabled_directory }}/{{ user }}"
+  register: user_keys_disabled_directory
+
+- name: "SSH Keys | Disable revoked administrators SSH Keys for user: {{ user }}"
+  authorized_key: user="{{ user }}" key="{{ lookup('file', item )}}" state=absent
+  with_fileglob:
+    - "{{ ssh_keys_disabled_directory }}/{{ user }}/*"
+  when: "{{ user_keys_disabled_directory.stat.exists == true }} "

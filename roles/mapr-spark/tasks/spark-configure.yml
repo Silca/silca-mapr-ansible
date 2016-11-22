@@ -1,0 +1,22 @@
+---
+
+- name: MapR | Spark | Configure Metastore uri
+  template: src=hive-site.xml.j2 backup=yes dest="/opt/mapr/spark/spark-{{ mapr_spark_version }}/conf/hive-site.xml" owner=mapr group=mapr mode=0755
+
+- name: MapR | Spark | Configure Spark hive metastore version
+  lineinfile:
+    dest: "/opt/mapr/spark/spark-{{ mapr_spark_version }}/conf/spark-defaults.conf"
+    regexp: "spark.sql.hive.metastore.version"
+    line: "spark.sql.hive.metastore.version {{ mapr_hive_schema_version }}"
+
+- name: MapR | Spark | Configure Spark datanucleus jars
+  lineinfile:
+    dest: "/opt/mapr/spark/spark-{{ mapr_spark_version }}/conf/spark-defaults.conf"
+    regexp: "spark.yarn.dist.files"
+    line: "spark.yarn.dist.files {{ datanucleus_jars | join(',') }}"
+
+- name: MapR | Spark | Configure Spark hive and hadoop jars
+  lineinfile:
+    dest: "/opt/mapr/spark/spark-{{ mapr_spark_version }}/conf/spark-defaults.conf"
+    regexp: "spark.sql.hive.metastore.jars"
+    line: "spark.sql.hive.metastore.jars {{ hive_jars | join(':') }}"

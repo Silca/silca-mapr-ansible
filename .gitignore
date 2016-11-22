@@ -1,0 +1,14 @@
+# Created by .ignore support plugin (hsz.mobi)
+.idea
+*.retry
+*.iml
+vault_pass
+# vim tmp files
+.main.yml.swp
+
+dont_commit/
+
+# Remove compile python code
+*.pyc
+roles/mapr-license/files/*
+

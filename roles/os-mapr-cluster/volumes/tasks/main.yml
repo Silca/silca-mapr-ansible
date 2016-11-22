@@ -1,0 +1,49 @@
+- name: Openstack | Create Mapr Volumes
+  delegate_to: "{{ groups['ansible_admin_node'][0] }}"
+  os_volume:
+    state: present
+    auth: "{{ os_cloud_auth }}"
+    availability_zone: "{{ os_availability_zone }}"
+    size: "{{ os_volume_size }}"
+    display_name: "{{ inventory_hostname }}_{{ item }}"
+    endpoint_type: "{{ os_endpoint_type }}"
+  with_items: [1, 2, 3, 4]
+  when: "{{ inventory_hostname in groups['mapr-node'] }}"
+  tags: "cindertests"
+
+- name: Openstack | Create Admin node
+  delegate_to: "{{ groups['ansible_admin_node'][0] }}"
+  os_volume:
+    state: present
+    auth: "{{ os_cloud_auth }}"
+    availability_zone: "{{ os_availability_zone }}"
+    size: "{{ os_volume_size }}"
+    display_name: "{{ inventory_hostname }}_data"
+    endpoint_type: "{{ os_endpoint_type }}"
+  when: "{{ inventory_hostname in groups['mapr-ha-node'] }}"
+  tags: "cindertests"
+
+# Attaches a volume to a compute host
+- name: Openstack | Attach Mapr Volumes
+  delegate_to: "{{ groups['ansible_admin_node'][0] }}"
+  os_server_volume:
+    state: present
+    auth: "{{ os_cloud_auth }}"
+    server: "{{ inventory_hostname }}"
+    volume: "{{ inventory_hostname }}_{{ item }}"
+    endpoint_type: "{{ os_endpoint_type }}"
+  with_items: [1, 2, 3, 4]
+  when: "{{ inventory_hostname in groups['mapr-node'] }}"
+  tags: "cindertests"
+
+# Attaches a volume to a compute host
+- name: Openstack | Attach Admin Volumes
+  delegate_to: "{{ groups['ansible_admin_node'][0] }}"
+  os_server_volume:
+    state: present
+    auth: "{{ os_cloud_auth }}"
+    server: "{{ inventory_hostname }}"
+    volume: "{{ inventory_hostname }}_data"
+    endpoint_type: "{{ os_endpoint_type }}"
+  when: "{{ inventory_hostname in groups['mapr-ha-node'] }}"
+  tags: "cindertests"

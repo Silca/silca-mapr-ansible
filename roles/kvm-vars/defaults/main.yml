@@ -1,0 +1,15 @@
+kvm_dir: "/opt/kvm"
+kvm_volume_dir: "{{ kvm_dir }}/images"
+kvm_os_dir: "{{ kvm_dir }}/os"
+kvm_log_dir: "{{ kvm_dir }}/logs"
+kvm_metadata_dir: "{{ kvm_dir }}/metadata"
+
+kvm_netname: os-net
+kvm_bridge_name: "{{ kvm_netname }}-bridge"
+
+
+kvm_image:
+  name: Centos6-1508
+  url: http://cloud.centos.org/centos/6/images/CentOS-6-x86_64-GenericCloud-1508.qcow2
+
+kvm_volume_system_size: 20

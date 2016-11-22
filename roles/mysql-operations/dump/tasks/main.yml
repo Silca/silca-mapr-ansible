@@ -1,0 +1,31 @@
+---
+
+## Répliquer le noeud master et copier dans /data/backup/mysql des deux noeuds HA
+- name: MySQL Dump | Create mysql structure if not exist
+  file: path={{ item }} state=directory
+  with_items:
+    - "{{ mysql_directory }}"
+    - "{{ mysql_dump_directory }}"
+
+- name: MySQL Dump | Create backup directory if not exist
+  file: path={{ mysql_dump_directory }} state=directory
+
+- name: MySQL Dump | Dump databases from ha node master
+  mysql_db: state=dump name=all target="{{ mysql_dump_directory }}/{{ mysql_dump_file_name }}"
+  when: "{{ inventory_hostname == groups['mapr-ha-node'][0] }}"
+
+- name: MySQL Dump | Fetch dump from master
+  fetch:
+    src: "{{ mysql_dump_directory }}/{{ mysql_dump_file_name }}"
+    dest: "/tmp/{{ mysql_dump_file_name }}"
+    flat: yes
+  when: "{{ inventory_hostname == groups['mapr-ha-node'][0] }}"
+
+- name: MySQL Dump | Copy dump backup directory
+  copy:
+    src: "/tmp/{{ mysql_dump_file_name }}"
+    dest: "{{ mysql_dump_directory }}/{{ mysql_dump_file_name }}"
+    owner: root
+    group: root
+    mode: 0755
+  when: "{{ groups['mapr-ha-node'] }}"

@@ -1,0 +1,8 @@
+# Instalaltion mcs avec des certificats officiels sur tous les noeuds MapR du cluster
+
+- include: configure.yml
+  when: (mcs_official_certificat == True) and ("{{ inventory_hostname in groups['mapr-node'] }}")
+
+- include: configure_initial.yml
+  when: (mcs_official_certificat == False) and ("{{ inventory_hostname in groups['mapr-node'] }}")
+

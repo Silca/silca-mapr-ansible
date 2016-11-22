@@ -1,0 +1,42 @@
+# {{ ansible_managed }}
+
+dn: olcDatabase={2}bdb,cn=config
+changetype: modify
+replace: olcSuffix
+olcSuffix: ou=mapr,o=test
+
+dn: olcDatabase={2}bdb,cn=config
+changetype: modify
+replace: olcRootDN
+olcRootDN: cn=lda_root_account,ou=profile,ou=mapr,o=test
+
+dn: olcDatabase={2}bdb,cn=config
+changetype: modify
+replace: olcRootPW
+olcRootPW: {{ vault_ldap_bind_password }}
+
+dn: cn=config
+changetype: modify
+replace: olcTLSCACertificateFile
+olcTLSCACertificateFile: /etc/openldap/cacerts/ca-local.pem
+
+dn: cn=config
+changetype: modify
+replace: olcTLSCertificateFile
+olcTLSCertificateFile: /etc/openldap/certs/slapd.pem
+
+dn: cn=config
+changetype: modify
+replace: olcTLSCertificateKeyFile
+olcTLSCertificateKeyFile: /etc/openldap/certs/slapd-key.pem
+
+dn: cn=config
+changetype: modify
+replace: olcLogLevel
+olcLogLevel: -1
+
+dn: olcDatabase={1}monitor,cn=config
+changetype: modify
+replace: olcAccess
+olcAccess: {0}to * by dn.base=gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth read by dn.base=cn=lda_root_account,ou=profile,ou=mapr,o=test read by * none
+

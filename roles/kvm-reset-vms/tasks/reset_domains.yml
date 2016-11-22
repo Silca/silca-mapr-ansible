@@ -1,0 +1,23 @@
+- name: KVM | Domain | Gathering list of all vms
+  delegate_to: localhost
+  run_once: true
+  virt: command=list_vms state=running
+  register: virt_vms
+
+- name: KVM | Domain | Drop vm config
+  run_once: true
+  delegate_to: localhost
+  virt: name="{{ item }}" command=destroy
+  with_items: "{{ virt_vms.list_vms }}"
+
+- name: KVM | Domain | Gathering list of all vms
+  run_once: true
+  delegate_to: localhost
+  virt: command=list_vms
+  register: all_virt_vms
+
+- name: KVM | Domain | Drop vm config
+  run_once: true
+  delegate_to: localhost
+  virt: name="{{ item }}" command=undefine
+  with_items: "{{ virt_vms.list_vms }}"

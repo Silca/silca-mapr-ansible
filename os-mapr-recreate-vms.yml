@@ -1,0 +1,12 @@
+---
+
+
+- hosts: mapr-node:mapr-ha-node
+  any_errors_fatal: true
+  gather_facts: no
+  remote_user: root
+  roles:
+    - { role: os-mapr-cluster/security-rules, tags: [ os-security-rules ] }
+    - { role: os-mapr-cluster/provisionning-vms, tags: [ os-provisionning-vms ] }
+    - { role: os-mapr-cluster/volumes, tags: [ os-volumes ] }
+    - { role: os-mapr-cluster/configure-vms, tags: [ os-configure-vms ] }

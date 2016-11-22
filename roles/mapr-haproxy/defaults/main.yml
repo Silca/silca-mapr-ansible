@@ -1,0 +1,124 @@
+---
+
+haproxy_ssl_check_parameter: ""
+
+# FIXME waiting for HA proxy refactoring
+hue_with_certificat: false
+
+# FIXING PORTS for those frontend binding port different from the backend ones
+haproxy_service_configs:
+
+  ###  HTTP SERVICES #######################################################################
+  http:
+    - service:
+        name: kibana-cluster
+        haproxyport: "{{ kibana.port }}"
+        acls:
+          - search_kibana http_auth(users)
+        httprequests:
+          - auth realm Administration if !search_kibana
+          - allow
+          - deny
+        servers:
+          - "{{ groups['mapr-monitoring'][0] }}"
+        serverport: "{{ kibana.port }}"
+
+  ###  TCP SERVICES #######################################################################
+  tcp :
+    - service:
+        name: history-server
+        haproxyport: "{{ historyserver.http_port }}"
+        balance: "source"
+        servers: "{{ groups['mapr-historyserver'] }}"
+        serverport: "{{ historyserver.http_port }}"
+
+    - service:
+        name: spark-history-server
+        haproxyport: "{{ spark.historyserver_port }}"
+        balance: "source"
+        servers: "{{ groups['mapr-spark'] }}"
+        serverport: "{{ spark.historyserver_port }}"
+
+    - service:
+        name: rm-cluster
+        haproxyport: "{{ resourcemanager.http_port }}"
+        balance: "source"
+        servers: "{{ groups['mapr-resourcemanager'] }}"
+        serverport: "{{ resourcemanager.http_port }}"
+
+    - service:
+        name: livy-cluster
+        haproxyport: "{{ spark.livy_port }}"
+        servers: "{{ groups['mapr-hue'] }}"
+        serverport: "{{ spark.livy_port }}"
+
+    - service:
+          name: sqoop2-cluster
+          haproxyport: "{{ sqoop2.server_port }}"
+          balance: "source"
+          servers: "{{ groups['mapr-sqoop2'] }}"
+          serverport: "{{ sqoop2.server_port }}"
+
+    - service:
+          name: hive-cluster
+          haproxyport: "{{ hive.hs2_port }}"
+          servers: "{{ groups['mapr-hive-server'] }}"
+          serverport: "{{ hive.hs2_port }}"
+
+    - service:
+          name: hivemeta-cluster
+          haproxyport: "{{ hive.hivemeta_port }}"
+          servers: "{{ groups['mapr-hive-server'] }}"
+          serverport: "{{ hive.hivemeta_port }}"
+
+    - service:
+          name: oozie-cluster
+          haproxyport: "{{ oozie.web_port }}"
+          servers: "{{ groups['mapr-oozie'] }}"
+          serverport: "{{ oozie.web_port }}"
+
+    - service:
+          name: httpfs-cluster
+          haproxyport: "{{ httpfs.port }}"
+          balance: "source"
+          servers: "{{ groups['mapr-httpfs'] }}"
+          serverport: "{{ httpfs.port }}"
+
+    - service:
+          name: drill-cluster
+          haproxyport: "{{ drill.http_port }}"
+          balance: "source"
+          servers: "{{ groups['mapr-drill'] }}"
+          serverport: "{{ drill.http_port }}"
+
+    - service:
+          name: hue-cluster
+          haproxyport: "{{ hue.webserver_port }}"
+          balance: "source"
+          servers: "{{ groups['mapr-hue'] }}"
+          serverport: "{{ hue.webserver_port }}"
+
+    - service:
+          name: mcs-cluster
+          haproxyport: "{{ mcs.port }}"
+          balance: "source"
+          servers: "{{ groups['mapr-webserver'] }}"
+          serverport: "{{ mcs.port }}"
+
+    - service:
+          name: mysql-cluster
+          haproxyport: "{{ ha_proxy.mysql_port }}"
+          balance: "roundrobin"
+          options:
+            - mysql-check user haproxy
+          servers: "{{ groups['mapr-ha-node'] }}"
+          serverport: "{{ mysql.port }}"
+          backup_strategy: 'only_first'
+
+    - service:
+        name: grafana-cluster
+        haproxyport: "{{ grafana.port }}"
+        balance: "source"
+        servers:
+          - "{{ groups['mapr-monitoring'][0] }}"
+        serverport: "{{ grafana.port }}"

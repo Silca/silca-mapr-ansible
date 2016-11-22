@@ -1,0 +1,8 @@
+---
+
+- name: MapR | Spark | Installation Spark (Yarn version)
+  package: pkg={{ item }} state=latest
+  with_items:
+    - mapr-spark-{{ mapr_spark_version }}*
+    - mapr-spark-historyserver-{{ mapr_spark_version }}*
+  tags: package

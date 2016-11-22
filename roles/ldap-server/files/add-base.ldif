@@ -1,0 +1,58 @@
+
+dn: ou=mapr,o=test
+ou: mapr
+objectClass: organizationalUnit
+
+dn: ou=profile,ou=mapr,o=test
+ou: profile
+objectClass: organizationalUnit
+
+dn: ou=People,ou=mapr,o=test
+ou: People
+objectClass: top
+objectClass: organizationalUnit
+
+dn: ou=Group,ou=mapr,o=test
+ou: Group
+objectClass: top
+objectClass: organizationalUnit
+
+dn: ou=Netgroup,ou=mapr,o=test
+ou: Netgroup
+objectClass: top
+objectClass: organizationalUnit
+
+dn: uid=maprldap,ou=People,ou=mapr,o=test
+objectClass: account
+objectClass: posixAccount
+uid: maprldap
+cn: maprldap
+userPassword: {SSHA}lSuBjwCZFFOZy7Eo9e7853536LqgiwGI
+uidNumber: 1000
+gidNumber: 1000
+homeDirectory: /home/maprldap
+
+dn: uid=luigildap,ou=People,ou=mapr,o=test
+objectClass: account
+objectClass: posixAccount
+uid: luigildap
+cn: luigildap
+userPassword: {SSHA}6iEqoI//fFM9GzLCMfqPLLc1csVKbKzE
+uidNumber: 1010
+gidNumber: 1010
+homeDirectory: /home/luigildap
+
+dn: cn=local,ou=Group,ou=mapr,o=test
+objectClass: top
+objectClass: posixGroup
+cn: local
+gidNumber: 2500
+memberUid: maprtest
+memberUid: luigitest
+
+dn: cn=local,ou=Netgroup,ou=mapr,o=test
+objectClass: top
+objectClass: nisNetgroup
+cn: local
+nisNetgroupTriple: (,maprldap,)
+nisNetgroupTriple: (,luigildap,)

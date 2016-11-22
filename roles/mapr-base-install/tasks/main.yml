@@ -1,0 +1,12 @@
+
+- name: MapR | Install requirements from MapR site
+  include: prerequisites.yml
+  tags: ["mapr-install-prerequisites"]
+
+- name: MapR | Installing Basis services
+  include: install-services.yml
+  tags: ["mapr-install-services"]
+
+- name: MapR | Configure the cluster
+  include: configure.yml
+  tags: ["mapr-install-configure"]

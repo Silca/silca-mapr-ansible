@@ -1,0 +1,22 @@
+#!/bin/sh
+# {{ ansible_managed }}
+
+case "$1" in
+    status)
+        status=$(sudo -i /usr/sbin/rstudio-server status)
+        if [[ $status == *"rstudio-server start/running"* ]]
+        then
+          exit 0
+        else
+          exit 1
+        fi
+        ;;
+    start)
+        echo Starting RStudio....
+        start=$(sudo -i /usr/sbin/rstudio-server start)
+        ;;
+    stop)
+        echo Stopping RStudio....
+        stop=$(sudo -i /usr/sbin/rstudio-server stop)
+        ;;
+esac

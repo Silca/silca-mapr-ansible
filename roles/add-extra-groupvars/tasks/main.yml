@@ -1,0 +1,17 @@
+- name: Global | Add secret vars per tenant
+  include_vars: "{{ item }}"
+  with_items:
+  - "{{ inventory_dir }}/../common_vars/all_vault.yml"
+  - "{{ inventory_dir }}/group_vars/all_vault.yml"
+  check_mode: yes
+  no_log: true
+  tags: always
+
+
+- name: Global | Add groups vars per tenant
+  include_vars: "{{ item }}"
+  with_items:
+  - "{{ inventory_dir }}/../common_vars/all.yml"
+  - "{{ inventory_dir }}/group_vars/all.yml"
+  check_mode: yes
+  tags: always

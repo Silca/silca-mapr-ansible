@@ -1,0 +1,23 @@
+- name: Ldap client | ldap | Copy certificate.
+  copy:
+     src: "{{ inventory_dir }}/resources/{{ item }}"
+     dest: "/etc/openldap/cacerts/{{ item }}"
+
+- name: Ldap client | ldap | Alias name determination
+  command: |
+    openssl x509
+      -hash
+      -noout
+      -in /etc/openldap/cacerts/{{ item }}
+  register: alias_name
+
+- name: Ldap client | ldap | Ensure alias does not exists
+  file:
+     path: "/etc/openldap/cacerts/{{ alias_name.stdout }}.0"
+     state: absent
+
+- name: Ldap client | ldap | Create alias as certificate link
+  file:
+     src: "/etc/openldap/cacerts/{{ item }}"
+     dest: "/etc/openldap/cacerts/{{ alias_name.stdout }}.0"
+     state: link

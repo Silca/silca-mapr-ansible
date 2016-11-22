@@ -1,0 +1,14 @@
+#!/bin/sh
+
+if [ -z $1 ] & [ -z $2 ]
+then
+    echo "Error on login, commande synthaxe : drillsql.sh LOGIN PASSWORD (file.sql)"
+    exit
+else
+    if [ -n "$3" ];
+        then
+                /opt/mapr/drill/drill-{{ mapr_drill_version }}/bin/sqlline -u jdbc:drill:zk={{ zookeeper.urls_with_port }} -n $1 -p $2 --run=$3;
+        else
+                /opt/mapr/drill/drill-{{ mapr_drill_version }}/bin/sqlline -u jdbc:drill:zk={{ zookeeper.urls_with_port }} -n $1 -p $2;
+        fi
+fi

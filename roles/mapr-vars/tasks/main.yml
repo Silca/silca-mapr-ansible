@@ -1,0 +1,4 @@
+- name: "Global | Mapr Ecosystem Pack: {{ mapr_mep }}"
+  include_vars: "{{ role_path }}/defaults/mep_{{ mapr_mep }}_vars.yml"
+  check_mode: no
+  tags: always

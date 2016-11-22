@@ -1,0 +1,57 @@
+mapr_mep: 1.1.0
+
+# MapR licence type
+licence_type: premium
+
+# Need to install kafka,
+install_kafka: true
+
+# Is LDAP must be installed
+use_ldap: no
+
+# Tenant group used in acces.conf
+ldap_tenant_group: bigdata_team
+
+# LDAP company name fot HUE configuration.
+ldap_company : "DEMO_COMPANY"
+
+# LDAP server name.
+ldap_server_name : "ldap.democompany.com"
+
+# LDAP Server Adress
+ldap_server_address : 10.0.0.10
+
+# LDAP server port.
+ldap_server_port : 636
+
+# LDAP server protocol.
+ldap_server_protocol : "ldaps"
+
+# Tenant organization for bind.
+ldap_bind_dn_o : "demo_org"
+
+# Tenant organization unit for bind.
+ldap_bind_dn_ou : "demo_ou"
+
+# Tenant organization for search.
+ldap_dn_o : "demo_org"
+
+# Tenant organization unit for search.
+ldap_dn_ou : "demo_ou"
+
+# LDAP CA certificate for ldaps (see resource directory)
+ldap_ca_cert_file_name : "ovdsilbigdata2.pem"
+
+# Positionner à True si certificats officiels PKI pour la console d'administration
+# Dans ce cas, placer les fichiers mcs.key et mcs.pem dans resources/mcs_keys
+mcs_official_certificat: true
+
+# Positionner à True si hue doit être utilisé en https
+# Dans ce cas, placer les fichiers hue.key et hue.pem dans resources/hue_keys
+hue_with_certificat: true
+
+additionnal_hosts:
+  - {name: "etl.democompany.com", ip: "10.0.0.11"}
+
+additionnal_ports:
+  - "{{ kafka.port }}"

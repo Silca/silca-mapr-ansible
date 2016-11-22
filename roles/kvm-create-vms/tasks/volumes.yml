@@ -1,0 +1,31 @@
+- name: KVM | Remove system volume for vm
+  become: true
+  delegate_to: localhost
+  file: path="{{ kvm_volume_dir }}/{{ inventory_hostname }}-system.qcow2" state=absent
+
+- name: KVM | Remove data volume for vm
+  become: true
+  delegate_to: localhost
+  file: path="{{ kvm_volume_dir }}/{{ item }}" state=absent
+  with_sequence: start=1 end="{{ volume_data_number }}" format="{{ inventory_hostname }}-data-%02x.qcow2"
+
+- name: KVM | Create system volume for vm
+  delegate_to: localhost
+  command: cp {{ kvm_os_dir }}/{{ kvm_image.name }}.qcow2 {{ inventory_hostname }}-system.qcow2
+  args:
+      chdir: "{{ kvm_volume_dir }}"
+
+- name: KVM | Create data volume for vm
+  become: true
+  delegate_to: localhost
+  command: qemu-img create -f qcow2 {{ item }} {{ volume_data_size }}G
+  args:
+      chdir: "{{ kvm_volume_dir }}"
+  with_sequence: start=1 end="{{ volume_data_number }}" format="{{ inventory_hostname }}-data-%01x.qcow2"
+
+- name: "KVM | Resize system volume to {{ kvm_volume_system_size }}G"
+  delegate_to: localhost
+  become: true
+  command: qemu-img resize {{ inventory_hostname }}-system.qcow2 {{ kvm_volume_system_size }}G
+  args:
+      chdir: "{{ kvm_volume_dir }}"

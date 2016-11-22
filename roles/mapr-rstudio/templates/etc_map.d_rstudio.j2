@@ -1,0 +1,10 @@
+#%PAM-1.0
+auth       include      password-auth
+
+account    required     pam_nologin.so
+account    include      password-auth
+
+session    required     pam_selinux.so close
+session    required     pam_loginuid.so
+session    optional     pam_keyinit.so force revoke
+session    include      password-auth

@@ -1,0 +1,11 @@
+# {{ ansible_managed  }}
+
+[epel]
+name=Extra Packages for Enterprise Linux 6 - $basearch
+{% if yum_with_proxy %}
+mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=epel-6&arch=$basearch
+{% else %}
+baseurl=http://{{ pulp_ip }}/pulp/repos/epel6-autoupdate/
+{% endif %}
+enabled=1
+gpgcheck=0

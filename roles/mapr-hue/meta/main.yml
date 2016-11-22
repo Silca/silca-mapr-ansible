@@ -1,0 +1,13 @@
+dependencies:
+  - { role: add-extra-groupvars }
+  - { role: mapr-vars }
+  - { role: mysql-operations/database,
+      mysql_db: "{{ hue.db_name }}",
+      tags: ["mapr-mysql-hue", "mapr-mysql-database-hue"]
+    }
+  - { role: mysql-operations/account,
+      mysql_db: "{{ hue.db_name }}",
+      mysql_user: "{{ hue.db_user }}",
+      mysql_passwd: "{{ hue.db_passwd }}",
+      tags: ["mapr-mysql-hue", "mapr-mysql-account-hue"]
+    }

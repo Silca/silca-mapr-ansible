@@ -1,0 +1,3 @@
+# A surcharger dans le group vars quand le client souhaite
+# se connecter depuis l'extérieur à la base hive
+additionnal_hive_metastore_hosts: []

@@ -1,0 +1,22 @@
+
+
+- name: MapR | Sqoop2 | Installation de Sqoop 2 Server
+  package: pkg=mapr-sqoop2-server-{{ mapr_sqoop2_version }}* state=latest
+  tags: package
+
+- name: MapR | Sqoop2 |  Install ojdbc6 for oracle
+  copy: src=ojdbc6.jar dest="/opt/mapr/sqoop/sqoop-{{ mapr_sqoop2_version }}/lib" owner=mapr group=mapr
+
+- name: MapR | Sqoop2 | Templatize Sqoop server configuration
+  template: src=sqoop.properties dest="/opt/mapr/sqoop/sqoop-{{ mapr_sqoop2_version }}/server/conf/sqoop.properties" owner=mapr group=mapr
+
+- name: MapR | Sqoop2 | Wait for Sqoop 2 server
+  wait_for: port="{{ sqoop2.server_port }}"
+  when: "{{ groups['mapr-sqoop2'] | length == 1 }}"
+
+- name: MapR | Sqoop2 | Test Homepage
+  uri:
+    url: http://{{ ansible_default_ipv4.address }}:{{ sqoop2.server_port }}
+  register: sqoop_response
+  when: "{{ groups['mapr-sqoop2'] | length == 1 }}"
+  tags: smoke-test

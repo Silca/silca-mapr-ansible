@@ -1,0 +1,63 @@
+---
+
+- name: MapR | Spark | Compute the spark-examples jars name
+  find: paths="/opt/mapr/spark/spark-{{ mapr_spark_version }}/lib/" patterns="spark-examples-*.jar"
+  register: spark_examples_jar
+  tags: [ "smoke-test-spark", "smoke-test"]
+
+
+- name: MapR | Spark | Fail if more Than one example jar
+  fail: msg="More than one spark example jar exists !"
+  when: "{{ spark_examples_jar.files | length > 1 }}"
+
+- name: MapR | Spark | Calculate Pi with Spark to test the cluster
+  command:  |
+    /opt/mapr/spark/spark-{{ mapr_spark_version }}/bin/spark-submit
+      --class org.apache.spark.examples.SparkPi
+      --master yarn
+      --deploy-mode client
+      --num-executors 1
+      --executor-memory 1g
+      --driver-memory 1g
+      --queue smoke-test
+      {{ spark_examples_jar.files[0].path }}
+  register: spark_pi_compute
+  failed_when: "{{ spark_pi_compute.stdout.find('Pi is roughly 3.1') == -1 }}"
+  become: true
+  become_user: mapr
+  become_method: su
+  tags: [ "smoke-test-spark", "smoke-test"]
+
+
+- name: MapR | Spark | Calculate Pi with Spark to test the cluster with Dynamic Allocation
+  command:  |
+    /opt/mapr/spark/spark-{{ mapr_spark_version }}/bin/spark-submit
+      --class org.apache.spark.examples.SparkPi
+      --master yarn
+      --deploy-mode client
+      --queue smoke-test
+      {{ spark_examples_jar.files[0].path }}
+  register: spark_pi_compute
+  failed_when: "{{ spark_pi_compute.stdout.find('Pi is roughly 3.1') == -1 }}"
+  become: true
+  become_user: mapr
+  become_method: su
+  tags: [ "smoke-test-spark", "smoke-test"]
+
+- name: MapR | Spark | Launch a Spark hive job to test connectivity
+  command:  |
+    /opt/mapr/spark/spark-{{ mapr_spark_version }}/bin/spark-submit
+      --class org.apache.spark.examples.sql.hive.HiveFromSpark
+      --master yarn
+      --deploy-mode client
+      --num-executors 1
+      --executor-memory 1g
+      --driver-memory 1g
+      --queue smoke-test
+      {{ spark_examples_jar.files[0].path }}
+  register: spark_hive_compute
+  failed_when: "{{ spark_hive_compute.stdout.find('[100,val_100,100,val_100]') == -1 }}"
+  become: true
+  become_user: mapr
+  become_method: su
+  tags: [ "smoke-test-spark", "smoke-test"]

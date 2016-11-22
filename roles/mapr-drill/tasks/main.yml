@@ -1,0 +1,59 @@
+---
+
+- name: MapR | Drill | Installation de Drill
+  package: name="mapr-drill-{{ mapr_drill_version }}*" state=latest
+  tags: package
+
+- name: MapR | Create JPam directory
+  file: path=/opt/jpam state=directory owner=mapr group=mapr mode=0755
+
+- name: MapR | Copy jpam
+  unarchive: copy=yes src=JPam-Linux_amd64-1.1.tgz dest=/opt/jpam
+
+- name: MapR | Add drill env.sh
+  template: src=drill-env.sh.j2 dest="/opt/mapr/drill/drill-{{ mapr_drill_version }}/conf/drill-env.sh"
+
+- name: MapR | Add drill-sql.sh
+  template: src=drill-sql.sh.j2 dest="/usr/bin/drill-sql.sh" mode="0755"
+
+- name: MapR | Drill | configure security in drill-override.conf
+  blockinfile:
+    dest:   "/opt/mapr/drill/drill-{{ mapr_drill_version }}/conf/drill-override.conf"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK for drill security"
+    insertafter: "drill.exec: {"
+    block: |
+          security.user.auth {
+                   enabled: true,
+                   packages += "org.apache.drill.exec.rpc.user.security",
+                   impl: "pam",
+                   pam_profiles: [ "sudo", "login" ]
+          },
+
+- name: MapR | Reconfigure.sh due to Drill installation
+  command: /opt/mapr/server/configure.sh -R --isvm
+  notify: Restart Warden
+
+- meta: flush_handlers
+
+# TODO Not working with cli
+#- name: MapR | Add hive config.
+#  run_once: true
+#  uri:
+#    url: http://localhost:{{ drill.http_port }}/storage/hive.json
+#    body: "{{ lookup('template', 'drill-storage-hive.json.j2')}}"
+#    user: mapr
+#    follow_redirects: all
+#    password: "{{ vault_crypted_mapr_password }}"
+#    method: POST
+#    body_format: json
+#  tags: drill-template
+
+
+- name: MapR | Waiting for access to drill for test.
+  wait_for: port={{ drill.http_port }}
+
+- name: MapR | Drill | Test a simple drill command to validate install on each node
+  shell: echo 'show databases;' | /opt/mapr/drill/drill-{{ mapr_drill_version }}/bin/sqlline -u jdbc:drill:zk={{ zookeeper.urls_with_port }} -n mapr -p {{ vault_crypted_mapr_password }}
+  register: command_result
+  failed_when: "{{ 'sys' not in command_result.stdout }}"
+  tags: smoke-test

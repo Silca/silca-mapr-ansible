@@ -1,0 +1,9 @@
+- name: Manage Hosts | Install liselinux python for deactivate by Ansible selinux
+  package: pkg={{ item }}
+  with_items:
+    - libselinux-python
+  tags: package
+
+- name: Hosts | Reset etc hosts
+  template: src=etc_hosts.j2 dest=/etc/hosts owner=root group=root mode=0755
+

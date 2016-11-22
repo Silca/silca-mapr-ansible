@@ -1,0 +1,27 @@
+---
+
+- include: haproxy-clean-install.yml
+  tags:
+    - haproxy-clean-tmp-folder
+
+- include: haproxy-install.yml
+  tags:
+    - haproxy-install
+
+- include: haproxy-configure.yml
+  tags:
+    - haproxy-configure-base
+
+- include: haproxy-services-config.yml
+  tags:
+    - haproxy-configure-services
+
+- include: haproxy-services-assemble.yml
+  tags:
+    - haproxy-services-assemble
+
+- name: "HAProxy | Force Flush handlers (for HAProxy)"
+  meta: flush_handlers
+
+- name: "HAProxy | Ensure HAProxy is started"
+  service: name=haproxy state=started enabled=true

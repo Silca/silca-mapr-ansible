@@ -1,0 +1,36 @@
+- name: Start Zookeeper
+  service: name=mapr-zookeeper state=started
+  when: "{{ inventory_hostname in groups['mapr-zookeeper'] }}"
+
+- name: Restart Zookeeper
+  service: name=mapr-zookeeper state=restarted
+  when: "{{ inventory_hostname in groups['mapr-zookeeper'] }}"
+
+- name: Restart Warden
+  service: name={{ item }} state=restarted
+  with_items:
+    - mapr-zookeeper
+    - mapr-warden
+  when: "{{ inventory_hostname in groups['mapr-node'] }}"
+  notify:
+    - Wait for nfs
+    - Check Mapr nfs mount
+
+- name: Wait for nfs
+  wait_for: port="{{ nfs.port_server }}"
+  when: "{{ inventory_hostname in groups['mapr-node'] }}"
+
+- name: Check Mapr nfs mount
+  command: ls /mapr/
+  register: nfs_result
+  until: nfs_result.stdout.find('{{ mapr.cluster_name }}') != -1
+  retries: 30
+  when: "{{ inventory_hostname in groups['mapr-node'] }}"
+
+- name: Alternatives Java
+  alternatives: name="{{ item.name }}" path="{{ item.path }}"
+  with_items:
+    - { name : "java", path: "/usr/lib/jvm/jre-1.8.0-openjdk.x86_64/bin/java"}
+    - { name : "javac", path: "/usr/lib/jvm/java-1.8.0-openjdk.x86_64/bin/javac"}
+  tags: alternatives
+

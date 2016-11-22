@@ -1,0 +1,25 @@
+- name: KVM | Remove old vm fingerprints
+  command: ssh-keygen -R {{ item }}
+  with_items:
+    - "{{ inventory_hostname }}"
+    - "{{ inventory_hostname }}.local"
+    - "{{ ansible_host }}"
+  delegate_to: localhost
+
+- name: KVM | Add dns entry on host machine
+  lineinfile:
+    regexp: "^.*{{ inventory_hostname }}"
+    line: "{{ ansible_host }} {{ inventory_hostname }} {{ inventory_hostname }}.local"
+    dest: /etc/hosts
+  become: true
+  delegate_to: localhost
+
+- name: "KVM | Download iso: {{ kvm_image.name }}"
+  run_once: true
+  delegate_to: localhost
+  get_url:
+    url: "{{ kvm_image.url }}"
+    dest: "{{ kvm_os_dir }}/{{ kvm_image.name }}.qcow2"
+  environment:
+    http_proxy: "{{ http_proxy }}"
+    https_proxy: "{{ https_proxy }}"

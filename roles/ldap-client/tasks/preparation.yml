@@ -1,0 +1,38 @@
+---
+
+- name: Ldap client | ldap | Disable cache group for netgroup, password
+  replace: dest=/etc/nscd.conf regexp={{ item.src }} replace={{ item.dest }}
+  with_items:
+   - { src: '\s+enable\-cache\s+passwd\s+yes', dest: '\nenable-cache passwd no' }
+   - { src: '\s+enable\-cache\s+group\s+yes', dest: '\nenable-cache group no' }
+   - { src: '\s+enable\-cache\s+netgroup\s+yes', dest: '\nenable-cache netgroup no' }
+  notify: restart sssd and nscd
+
+- name: Ldap client | ldap | Make CA certs directory if absent
+  file:
+     path: "/etc/openldap/cacerts"
+     state: directory
+
+- name: Ldap client | ldap | Copy certificate.
+  copy:
+     src: "{{ inventory_dir }}/resources/{{ item }}"
+     dest: "/etc/openldap/cacerts/{{ item }}"
+  with_items: "{{ ldap_ca_cert_file_name }}"
+
+- name: Ldap client | ldap | Call include include-link.yml
+  include: include-link.yml
+  with_items: "{{ ldap_ca_cert_file_name }}"
+
+- name: Ldap client | ldap | Set openldap client configuration
+  template:
+     src: "{{ item.src }}"
+     dest: "{{ item.dest }}"
+     backup: yes
+  with_items:
+     - { src : "ldap.conf.j2", dest : "/etc/openldap/ldap.conf" }
+
+- name: Ldap client | ldap | generate ksh link
+  file: src={{item.src}} dest={{item.dest}} state=link force=yes
+  with_items:
+   - { src: '{{ "/bin/ksh" }}' , dest: '{{ "/usr/bin/ksh" }}' }
+   - { src: '{{ "/bin/ksh93" }}' , dest: '{{ "/usr/bin/ksh" }}' }

@@ -1,0 +1,133 @@
+- name: MapR | Install du repo MapR et Ecosystem
+  template: src=etc_yum.repos.d_mapr.repo.j2 dest=/etc/yum.repos.d/MapR.repo owner=root group=root mode=0755
+  notify: Invalidate Yum Cache
+  tags: "yum_repositories"
+
+
+- name: MapR | Install du repo MapR Patch
+  template: src=etc_yum.repos.d_mapr-patch.repo.j2 dest=/etc/yum.repos.d/MapR-patch.repo owner=root group=root mode=0755
+  notify: Invalidate Yum Cache
+  tags: "yum_repositories"
+
+- name: MapR | Install du repo RStudio
+  template: src=etc_yum.repos.d_rstudio.repo.j2 dest=/etc/yum.repos.d/RStudio.repo owner=root group=root mode=0755
+  when: "platform != 'local' and platform != 'lxc'"
+  notify: Invalidate Yum Cache
+  tags: "yum_repositories"
+
+- meta: flush_handlers
+
+- name: MapR | remove loopback (mapr requirement)
+  lineinfile: dest=/etc/hosts regexp="^127.0.0.1" line="127.0.0.1 localhost"
+  with_items: "{{ inventory_hostname in groups['mapr-node'] }}"
+
+- name: MapR | Activate ssh login with password
+  replace: dest=/etc/ssh/sshd_config regexp="PasswordAuthentication no" replace="PasswordAuthentication yes"
+  tags: sshconfig
+
+- name: MapR | Restart sshd service to apply modification
+  service : name=sshd state=restarted
+  tags: sshconfig
+
+- name: MaprR | Apply sysconfig
+  command: sysctl -p
+  when: "{{ platform != 'lxc' }}"
+
+- name: MapR | Creation du groupe mapr
+  group: name=mapr gid=5000 state=present
+
+- name: MapR | Creation du user mapr
+  user: name="{{ item.user }}" comment="{{ item.comment }}" uid="{{ item.uid }}" group=mapr groups=root
+  with_items:
+    - { user: mapr, uid: 5000, password: "{{ vault_crypted_mapr_password }}", comment: "MapR user"}
+  no_log: true
+
+- name: MapR | Creation des utilisateurs simples
+  user: name="{{ item.user }}" comment="{{ item.comment }}" uid="{{ item.uid }}"
+  with_items:
+    - { user: luigi, uid: 5001, password: "{{ vault_crypted_luigi_password }}", comment: "MapR Sample user" }
+  no_log: true
+
+- name: MapR | Allow mapr user to have passwordless sudo
+  lineinfile:
+    dest: /etc/sudoers.d/mapr
+    state: present
+    regexp: '^mapr'
+    line: 'mapr ALL=(ALL) NOPASSWD: ALL'
+    create: yes
+
+- name: MapR | Remove require tty for mapr sudo
+  lineinfile:
+    dest: /etc/sudoers.d/mapr
+    state: present
+    regexp: '^Defaults'
+    line: 'Defaults:mapr !requiretty'
+    create: yes
+
+- name: Mapr | Configure password (doesn't work with ansible user module and password attr)
+  shell: echo "{{ item.password }}" | passwd --stdin {{ item.user }}
+  with_items:
+      - { user: mapr, password: "{{ vault_crypted_mapr_password }}" }
+      - { user: luigi, password: "{{ vault_crypted_luigi_password }}" }
+  no_log: true
+
+- name: MapR | Sysctl | swappiness
+  sysctl: name=vm.swappiness value=0 state=present
+  when: "{{ platform != 'lxc' }}"
+
+
+- name: MapR | Sysctl | overcommit_memory
+  sysctl: name=vm.overcommit_memory value=0 state=present
+  when: "{{ platform != 'lxc' }}"
+
+- name: MapR | Sysctl | tcp_retries2
+  sysctl: name="net.ipv4.tcp_retries2" value=5 state=present ignoreerrors=yes
+  when: "{{ platform != 'lxc' }}"
+
+- name: MapR | Sysctl | disable_ipv6
+  sysctl: name="net.ipv6.conf.all.disable_ipv6" value=1 state=present ignoreerrors=yes
+  when: "{{ platform != 'lxc' }}"
+
+- name: MapR | Sysctl | rpcbind
+  service: name=rpcbind enabled=yes state=started
+
+- name: MapR | Check Mandatory services
+  service: name="{{ item }}" state=started enabled=true
+  with_items:
+      - rsyslog
+
+- name: MapR | Configure number of open files
+  become: true
+  lineinfile: dest=/etc/security/limits.d/91-nfile.conf line="* - nofile 64000" state=present create=true
+
+- name: MapR | Configure number of process
+  become: true
+  lineinfile: dest=/etc/security/limits.d/90-nproc.conf line="* - nproc 64000" state=present create=true
+
+- name: MapR | Templatize /etc/pam.d/su
+  template: src=etc_pam.d_su.j2 dest=/etc/pam.d/su owner=root group=root mode=0755
+  become: true
+
+# TODO: Put theses files on bashrc.d
+- name: Openstack | Configure bashrc
+  lineinfile: dest=/root/.bashrc regexp="{{ item.begin }}" line="{{ item.line }}"
+  with_items:
+    - { begin: "^export JAVA_HOME", line: "export JAVA_HOME=/usr/lib/jvm/java" }
+    - { begin: "^export JRE_HOME", line: "export JRE_HOME=/usr/lib/jvm/java/jre" }
+
+- name: MapR | Create a data directory
+  file: path=/data state=directory owner=root
+
+#FIXME To delete Work only for lxc not on ZFS
+#- name: MapR | Create a disk index file for MapR
+#  command: fallocate -l 40G {{ item }} creates="{{ item }}"
+#  with_items: "{{ mapr_maprfs_volumes }}"
+#  when: "{{ platform == 'lxc' }}"
+
+- name: MapR | Templatize tmp_disks.txt.j2
+  template: src=tmp_disks.txt.j2 dest=/tmp/disks.txt owner=root group=root mode=0755
+  when: "{{ platform != 'lxc' }}"
+
+- name: MapR | Templatize tmp_disks.txt.j2
+  template: src=tmp_disks_lxc.txt.j2 dest=/tmp/disks.txt owner=root group=root mode=0755
+  when: "{{ platform == 'lxc' }}"

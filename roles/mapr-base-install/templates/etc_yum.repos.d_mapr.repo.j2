@@ -1,0 +1,21 @@
+[mapr-{{ mapr_release_version | major_minor_patches }}]
+name=MapR Technologies
+{% if yum_with_proxy %}
+baseurl=http://package.mapr.com/releases/v{{ mapr_release_version | major_minor_patches }}/redhat/
+{% else %}
+baseurl=http://{{ pulp_ip }}/pulp/repos/mapr-{{ mapr_release_version | major_minor_patches }}
+{% endif %}
+enabled=1
+gpgcheck=0
+protect=1
+
+[mapr-mep-{{ mapr_mep }}]
+name=MapR Technologies
+{% if yum_with_proxy %}
+baseurl=https://package.mapr.com/releases/MEP/MEP-{{ mapr_mep }}/redhat
+{% else %}
+baseurl=http://{{ pulp_ip }}/pulp/repos/mapr-mep-{{ mapr_mep }}
+{% endif %}
+enabled=1
+gpgcheck=0
+protect=1

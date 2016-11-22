@@ -1,0 +1,10 @@
+---
+- name: "HAProxy | Clean the conf.d"
+  file: path=/etc/haproxy/conf.d state=absent
+
+- name: "HAProxy | Clean the haproxy temporary file"
+  file: path=/tmp/haproxy.cfg.tmp state=absent
+
+- name: "HAProxy | Clean the haproxy temporary file"
+  file: path=/tmp/services.cfg.tmp state=absent
+

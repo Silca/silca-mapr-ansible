@@ -1,0 +1,10 @@
+os_image_name: CentOS6 Cloud Official
+os_security_groups: "{{ tenant | lower}}{{ platform_type is defined | ternary('-', '') }}{{ platform_type | default('') }}_security_groups"
+os_network_provider: false
+os_cloud_auth:
+  auth_url: "http://{{ groups['os-keystone-vip'][0] }}:5000/v3"
+  username: "{{ tenant | lower }}-admin"
+  password: "{{ vault_os_keystone_pwd }}"
+  project_name: "{{ tenant }}"
+  project_domain_name: Default
+  user_domain_name: Default

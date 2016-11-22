@@ -1,0 +1,4 @@
+vault_ha_admin_password: adminpasswd
+vault_ha_kibana_password: kibanapasswd
+vault_ha_elastic_password: elasticpasswd
+vault_ha_mysql_replication_password: mysqlreppasswd

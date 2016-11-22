@@ -1,0 +1,13 @@
+---
+kafka_home_base: /opt/kafka
+scala_version: "2.10"
+kafka_version: "0.9.0.0"
+kafka_tgz_hash: "sha256:46a92acf20f626e08b86c39f610388250c538883030f956e935a37b7688ce53e"
+kafka_home_dir: "{{ kafka_home_base }}/kafka_{{ scala_version }}-{{ kafka_version }}"
+
+kafka_partitions_number: 10
+
+kafka_test_topic_name: "smoke-test"
+kafka_test_partition_value: 1
+kafka_test_replication_factor_value: 1
+

@@ -1,0 +1,15 @@
+
+   _____  ____ __    ______ ___
+  / ___/ /  _// /   / ____//   |          OS: {{ ansible_distribution }} {{ ansible_distribution_version }}
+  \__ \  / / / /   / /    / /| |    Hostname: {{ ansible_hostname }}
+ ___/ /_/ / / /___/ /___ / ___ |
+/____//___//_____/\____//_/  |_|
+
+{% if mapr_release_version is defined %}
+Mapr: {{ mapr_release_version | major_minor_patches }}
+{% endif %}
+
+===================================================
+About: powered by Ansible at {{ ansible_date_time.date }}, {{ ansible_date_time.time }}.
+
+    network: "{{ os_network_provider is defined and os_network_provider | ternary('provider', 'private') }}_{{ tenant }}"

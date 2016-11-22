@@ -1,0 +1,14 @@
+
+
+- name: MapR | Sqoop1 | Installation de Sqoop 1
+  package: pkg=mapr-sqoop-{{ mapr_sqoop_version }}* state=latest
+  notify: Restart Warden
+  tags: package
+
+
+- name: MapR | Sqoop1 | Templatize Sqoop server configuration
+  template: src=sqoop.properties dest="/opt/mapr/sqoop/sqoop-{{ mapr_sqoop_version }}/conf/sqoop.properties" owner=mapr group=mapr
+
+- name: MapR | Sqoop1 | Force Flush handlers (for Warden)
+  meta: flush_handlers
+

@@ -1,0 +1,125 @@
+
+- name: MapR | Monitoring | Install Collectd
+  package: pkg="{{ item }}" state=latest
+  with_items:
+   - mapr-collectd
+   - mapr-opentsdb
+   - gnuplot
+  tags: package
+
+- name: MapR | Monitoring | Install grafana and kibana only on first node
+  package: pkg="{{ item }}" state=latest
+  with_items:
+   - mapr-grafana
+  when: "{{ inventory_hostname == groups['mapr-monitoring'][0]}}"
+  tags: "package"
+
+
+- name: MapR | Monitoring | Generate self signed certificate
+  delegate_to: localhost
+  command:  |
+    openssl req
+    -subj '/CN={{ groups['mapr-ha-node'][0] }}/'
+    -x509
+    -days 3650
+    -batch -nodes
+    -newkey rsa:2048
+    -keyout /tmp/grafana.key
+    -out /tmp/grafana.pem
+  when: "{{ inventory_hostname == groups['mapr-monitoring'][0]}}"
+
+- name: MapR | Monitoring | Copy self signed certificate to node
+  copy:
+    src: "/tmp/{{ item }}"
+    dest: "/opt/mapr/grafana/grafana-{{ mapr_grafana_version }}/etc/grafana"
+    owner: mapr
+  with_items:
+    - grafana.pem
+    - grafana.key
+  when: "{{ inventory_hostname == groups['mapr-monitoring'][0]}}"
+
+- name: MapR | Monitoring | Templatize Grafana.ini
+  template:
+    src: "grafana.ini.j2"
+    dest: "/opt/mapr/grafana/grafana-{{ mapr_grafana_version }}/etc/grafana/grafana.ini"
+    owner: mapr
+    group: mapr
+    mode: "0644"
+  when: "{{ inventory_hostname == groups['mapr-monitoring'][0]}}"
+
+- name: MapR | Monitoring | Configure Grafana
+  command: |
+    /opt/mapr/server/configure.sh
+      -R
+      -OT {{ groups['mapr-monitoring'] | join(',') }}
+  notify: Restart Warden
+
+- name: MapR | Monitoring | Wait for OpenTSDB
+  wait_for: port={{ item }}
+  with_items:
+    - "{{ opentsdb.port }}"
+
+- name: MapR | Monitoring | Wait for Grafana
+  wait_for: port={{ item }}
+  with_items:
+    - "{{ grafana.port }}"
+  when: "{{ inventory_hostname == groups['mapr-monitoring'][0]}}"
+
+- name: MapR | Monitoring | List all datasources
+  delegate_to: localhost
+  uri:
+    method: GET
+    url: https://{{ ansible_default_ipv4.address }}:{{ grafana.port }}/api/datasources
+    Header_Accept: "application/json"
+    user: "admin"
+    password: "{{ vault_ha_admin_password }}"
+    validate_certs: no
+    follow_redirects: all
+    force_basic_auth: true
+  retries: 30
+  register: list_datasources_response
+  until: list_datasources_response.status == 200
+  delay: 1
+  when: "{{ inventory_hostname == groups['mapr-monitoring'][0]}}"
+  tags: list_datasources
+
+
+- name: MapR | Monitoring | Add Datasource
+  delegate_to: localhost
+  uri:
+    url: https://{{ ansible_default_ipv4.address }}:{{ grafana.port }}/api/datasources
+    status_code: 200,201
+    body: "{{ lookup('template','datasource.json') }}"
+    body_format: json
+    user: "admin"
+    password: "{{ vault_ha_admin_password }}"
+    method: POST
+    validate_certs: no
+    follow_redirects: all
+    force_basic_auth: true
+  environment:
+    http_proxy: ''
+  when: "{{ inventory_hostname == groups['mapr-monitoring'][0] and list_datasources_response.json|length == 0 }}"
+  tags: import_dashboard
+
+- name: MapR | Monitoring | Add Dashboard
+  delegate_to: localhost
+  uri:
+    url: https://{{ ansible_default_ipv4.address }}:{{ grafana.port }}/api/dashboards/db
+    body: "{{ lookup('template', item) }}"
+    body_format: json
+    user: "admin"
+    password: "{{ vault_ha_admin_password }}"
+    method: POST
+    validate_certs: no
+    follow_redirects: all
+    force_basic_auth: true
+  register: es_response
+  with_items:
+    - dashboard_node.json
+    - dashboard_volume.json
+    - dashboard_cldb.json
+  environment:
+    http_proxy: ''
+  when: "{{ inventory_hostname == groups['mapr-monitoring'][0]}}"
+  tags: import_dashboard
