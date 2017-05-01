@@ -1,14 +1,17 @@
 ---
 
 - name: MapR | Spark | Compute the spark-examples jars name
-  find: paths="/opt/mapr/spark/spark-{{ mapr_spark_version }}/lib/" patterns="spark-examples-*.jar"
+  find:
+    paths:
+      - "/opt/mapr/spark/spark-{{ mapr_spark_version }}/lib"
+      - "/opt/mapr/spark/spark-{{ mapr_spark_version }}/examples/jars"
+    patterns: "spark-examples*.jar"
   register: spark_examples_jar
   tags: [ "smoke-test-spark", "smoke-test"]
 
-
 - name: MapR | Spark | Fail if more Than one example jar
   fail: msg="More than one spark example jar exists !"
-  when: "{{ spark_examples_jar.files | length > 1 }}"
+  when: (spark_examples_jar.files | length != 1 )
 
 - name: MapR | Spark | Calculate Pi with Spark to test the cluster
   command:  |
@@ -48,6 +51,7 @@
   command:  |
     /opt/mapr/spark/spark-{{ mapr_spark_version }}/bin/spark-submit
       --class org.apache.spark.examples.sql.hive.HiveFromSpark
+      --class {{ (mapr_spark_version | major == '2') | ternary('org.apache.spark.examples.sql.hive.SparkHiveExample', 'org.apache.spark.examples.sql.hive.HiveFromSpark') }}
       --master yarn
       --deploy-mode client
       --num-executors 1
@@ -57,6 +61,7 @@
       {{ spark_examples_jar.files[0].path }}
   register: spark_hive_compute
   failed_when: "{{ spark_hive_compute.stdout.find('[100,val_100,100,val_100]') == -1 }}"
+  when: mapr_spark_version | major_minor != "2.1"
   become: true
   become_user: mapr
   become_method: su

@@ -46,6 +46,14 @@
 - name: MapR | Spark | Compute the spark yarn shuffle name
   shell: ls /opt/mapr/spark/spark-{{ mapr_spark_version }}/lib/spark-{{ mapr_spark_version }}-*-yarn-shuffle.jar
   register: sparkjars
+  when: mapr_spark_version != "2.1.0"
+
+#### Add spark mapr yarn shuffle jar to mapr yarn lib directory
+- name: MapR | Spark | Compute the spark yarn shuffle name
+  shell: ls /opt/mapr/spark/spark-{{ mapr_spark_version }}/yarn/spark-{{ mapr_spark_version }}-*-yarn-shuffle.jar
+  register: sparkjars
+  when: mapr_spark_version == "2.1.0" 
+
 
 - name: MapR | Spark | Add Spark Shuffle Service to yarn lib directory
   copy:
