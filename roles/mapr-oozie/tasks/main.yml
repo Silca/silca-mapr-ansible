@@ -61,7 +61,7 @@
   when: "{{ groups['mapr-oozie'] | length == 1 }}"
 
 - name: MapR | Oozie | Configure bashrc
-  lineinfile: dest=/etc/profile regexp="^export OOZIE_URL" line="export OOZIE_URL='http://{{ inventory_hostname }}:{{ oozie.web_port }}/oozie'"
+  lineinfile: dest=/etc/profile regexp="^export OOZIE_URL" line="export OOZIE_URL='http://{{ inventory_hostname }}.{{ domain }}:{{ oozie.web_port }}/oozie'"
   when: "{{ groups['mapr-oozie'] | length == 1 }}"
 
 - name: MapR | Oozie | Check if /oozie/share/lib is not empty
