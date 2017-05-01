@@ -33,6 +33,13 @@ haproxy_service_configs:
         serverport: "{{ historyserver.http_port }}"
 
     - service:
+        name: hbase-thrift-server
+        haproxyport: "{{ hbase.thrift_port }}"
+        balance: "source"
+        servers: "{{ groups['mapr-client-node'] }}"
+        serverport: "{{ hbase.thrift_port }}"
+
+    - service:
         name: spark-history-server
         haproxyport: "{{ spark.historyserver_port }}"
         balance: "source"
