@@ -5,7 +5,7 @@
   with_items:
     - mapr-hive-{{ mapr_hive_version }}*
     - mapr-hiveserver2-{{ mapr_hive_version }}*
-  when: "{{ inventory_hostname in groups['mapr-hive-server'] }}"
+  when:  inventory_hostname in groups['mapr-hive-server']
   tags: package
 
 - name: MapR | Hive | Installation Hive MetaStore
@@ -13,7 +13,7 @@
   with_items:
     - mapr-hive-{{ mapr_hive_version }}*
     - mapr-hivemetastore-{{ mapr_hive_version }}*
-  when: "{{ inventory_hostname in groups['mapr-hive-metastore'] }}"
+  when:  inventory_hostname in groups['mapr-hive-metastore']
   tags: package
 
 - name: MapR | Hive | Add environment variable
@@ -67,7 +67,11 @@
           <name>datanucleus.schema.autoCreateAll</name>
           <value>true</value>
         </property>
-  when: "{{ inventory_hostname in groups['mapr-hive']}}"
+  when:  inventory_hostname in groups['mapr-hive']
+
+#- name: MapR | Update Hive schema
+#  command: /opt/mapr/hive/hive-{{ mapr_hive_version }}/bin/schematool -upgradeSchema -dbType mysql
+
 
 - name: MapR | Reconfigure.sh due to Hive installation
   command: /opt/mapr/server/configure.sh -R --isvm
@@ -77,17 +81,36 @@
 
 - name: MapR | Hive | Wait for Hive Metastore to be ready
   wait_for: port="{{ hive.hivemeta_port }}"
-  when: "{{ groups['mapr-hive-server'] | length == 1 and inventory_hostname in groups['mapr-hive-metastore'] }}"
+  when:  groups['mapr-hive-server'] | length == 1 and inventory_hostname in groups['mapr-hive-metastore']
 
 - name: MapR | Hive | Wait for Hive Server 2 to be ready
   wait_for: port="{{ hive.hs2_port }}"
-  when: "{{ groups['mapr-hive-server'] | length == 1 and inventory_hostname in groups['mapr-hive-server'] }}"
+  when:  groups['mapr-hive-server'] | length == 1 and inventory_hostname in groups['mapr-hive-server']
 
 - name: MapR | Hive | Création du répertoire /user/hive/warehouse dans HDFS
   command: hadoop fs -mkdir -p /user/hive/warehouse
   become: yes
   become_user: mapr
   run_once: true
+
+- name: "MapR | Hive | Check hive metastore version in database"
+  command: >
+    mysql --database {{ hive.db_name }}
+      -h {{ groups['mapr-ha-node'][0] }}
+      -u {{ hive.db_user }}
+      -p{{ hive.db_passwd }}
+      -e "select SCHEMA_VERSION from VERSION;"
+  register: mysql_hive_version
+  changed_when: (mapr_hive_version.stdout_lines is defined) and (mapr_hive_version not in command_result.stdout_lines)
+  tags: mysqlcheck
+
+- debug: var=mysql_hive_version
+  tags: mysqlcheck
+
+- name: MapR | Update Hive schema if needed
+  command: /opt/mapr/hive/hive-{{ mapr_hive_version }}/bin/schematool -upgradeSchema -dbType mysql
+  when: (mysql_hive_version.stdout_lines | length > 0) and mysql_hive_version.stdout_lines[1] != mapr_hive_version
+  tags: mysqlcheck
 
 - name: MapR | Hive | Test a simple hive command to validate install on each node
   shell: echo 'show databases;' | hive
