@@ -35,9 +35,8 @@
   notify: Restart Warden
 
 - name: MapR | Configure Yarn Log Aggregation | Check if the /yarnlogs volume exists
-  stat: path=/mapr/{{ mapr.cluster_name }}/yarnlogs
+  command: hadoop fs -ls /
   register: nfsyarnlogsvolume
-  ignore_errors: true
 
 - name: MapR | Configure Yarn Log Aggregation | Create the /yarnlogs volume
   command: |
@@ -50,14 +49,15 @@
   become_user: mapr
   become: true
   run_once: true
-  when: nfsyarnlogsvolume.stat.islnk is not defined
+  when: nfsyarnlogsvolume.stdout.find('yarnlogs') == -1
+
 
 - name: MapR | Configure Yarn Log Aggregation | Parametrage des droits du point de montage /yarnlogs
   command: hadoop fs -chmod 777 /yarnlogs
 
 - name: MapR | Configure Yarn Log Aggregation | yarn-env.sh
   lineinfile: dest=/opt/mapr/hadoop/hadoop-{{mapr_hadoop_version}}/etc/hadoop/yarn-env.sh regexp="MAPR_IMPERSONATION_ENABLED" line="export MAPR_IMPERSONATION_ENABLED=1"
-  when : "{{ inventory_hostname in groups['mapr-nodemanager'] }}"
+  when: inventory_hostname in groups['mapr-nodemanager']
 
 - name: MapR | Configure Yarn Log Aggregation | yarn-site.xml
   blockinfile:
@@ -73,5 +73,5 @@
          <name>yarn.nodemanager.remote-app-log-dir</name>
             <value>/yarnlogs</value>
          </property>
-  when : "{{ inventory_hostname in groups['mapr-nodemanager'] }}"
+  when: inventory_hostname in groups['mapr-nodemanager']
   notify: Restart Warden
