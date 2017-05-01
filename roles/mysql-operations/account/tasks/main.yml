@@ -59,7 +59,7 @@
   delegate_to: "{{ item }}"
   register: command_result
   failed_when: "{{ '123' not in command_result.stdout_lines }}"
-  with_items: groups['mapr-ha-node']
+  with_items: "{{ groups['mapr-ha-node'] }}"
 
 
 #- name: "MapR | MySQL | Enable replication if needed: {{ replication }}"
