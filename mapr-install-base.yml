@@ -56,5 +56,4 @@
   roles:
     - { role: mapr-base-nfs, tags: [ mapr-install-nfs ] }
     - { role: mapr-base-postinstall, tags: [ mapr-post-install ] }
-    - { role: mapr-base-patches, tags: [ mapr-install-patches ] }
-
+    - { role: mapr-base-patches, when: mapr_release_version != "5.2.1", tags: [ mapr-install-patches ] }

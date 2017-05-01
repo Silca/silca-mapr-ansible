@@ -9,6 +9,12 @@
   notify: Invalidate Yum Cache
   tags: "yum_repositories"
 
+- name: MapR | Remove MapR Patch for 5.2.1 (no repo available now)
+  file: path=/etc/yum.repos.d/MapR-patch.repo state=absent
+  notify: Invalidate Yum Cache
+  when: mapr_release_version == "5.2.1"
+  tags: "yum_repositories"
+
 - name: MapR | Install du repo RStudio
   template: src=etc_yum.repos.d_rstudio.repo.j2 dest=/etc/yum.repos.d/RStudio.repo owner=root group=root mode=0755
   when: "platform != 'local' and platform != 'lxc'"
