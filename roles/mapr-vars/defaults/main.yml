@@ -5,6 +5,14 @@
 mapr_mep: 1.0.0
 mapr_release_version: 5.1.0
 
+mapr_internal_subnet_if: "{{ ( ansible_eth1 is defined ) | ternary('ansible_eth1', 'ansible_eth0') }}"
+mapr_internal_subnet_network: "{{ hostvars[inventory_hostname][mapr_internal_subnet_if]['ipv4']['network'] }}"
+mapr_internal_subnet_netmask: "{{ hostvars[inventory_hostname][mapr_internal_subnet_if]['ipv4']['netmask'] }}"
+mapr_internal_subnet_without_prefix: "{{ mapr_internal_subnet_network }}/{{ mapr_internal_subnet_netmask }}"
+mapr_internal_subnet_prefix: "{{ mapr_internal_subnet_without_prefix | ipaddr('prefix') }}"
+mapr_internal_subnet: "{{ mapr_internal_subnet_network }}/{{ mapr_internal_subnet_prefix }}"
+
+
 mapr:
   cluster_name: "{{ tenant | lower }}{{ platform_type is defined | ternary('-', '') }}{{ platform_type | default('') }}-cluster"
   java_home: /usr/lib/jvm/java-1.8.0

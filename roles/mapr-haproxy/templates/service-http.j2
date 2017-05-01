@@ -8,5 +8,5 @@ listen {{ item.service.name }} :{{ item.service.haproxyport }}
     http-request {{ http_request_value }}
 {% endfor %}
 {% for server_node in item.service.servers|default([]) %}
-    server {{ server_node }} {{ server_node }}:{{ item.service.serverport }} check
+    server {{ server_node }} {{ hostvars[server_node][mapr_internal_subnet_if]['ipv4']['address'] }}:{{ item.service.serverport }} check
 {% endfor %}
