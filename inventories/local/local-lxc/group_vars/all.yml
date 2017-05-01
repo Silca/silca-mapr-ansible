@@ -1,9 +1,9 @@
 ---
 mapr_release_version: 5.2.1
 mapr_mep: 3.0.0
-licence_type: basic
 
-
+# Available values are trial, basic, premium
+licence_type: trial
 
 # Is LDAP must be installed
 use_ldap: no

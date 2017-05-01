@@ -48,7 +48,7 @@
   any_errors_fatal: true
   serial: "100%"
   roles:
-    - { role: mapr-license, tags: [ mapr-install-license ] }
+    - { role: mapr-license, when: licence_type != trial ,tags: [ mapr-install-license ] }
 
 - hosts: mapr-node
   any_errors_fatal: true
