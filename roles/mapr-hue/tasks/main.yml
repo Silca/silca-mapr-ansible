@@ -1,3 +1,15 @@
+- name: MapR | Copy Mariadb compat rpm ( #MAPR-18668 )
+  copy: src=MariaDB-5.5.52-centos7-x86_64-compat.rpm dest=/tmp
+  when: "{{ ansible_distribution_major_version == '7' }}"
+
+- name: MapR | Install Mariadb compat rpm ( #MAPR-18668 )
+  command: rpm -ivh --nodeps /tmp/MariaDB-5.5.52-centos7-x86_64-compat.rpm
+  when: "{{ ansible_distribution_major_version == '7' }}"
+  ignore_errors: true
+
+- name: MapR | Create a simlink for mapr ( #MAPR-18668 )
+  file: src=/lib64/libsasl2.so.3.0.0 dest=/lib64/libsasl2.so.2 state=link
+  when: "{{ ansible_distribution_major_version == '7' }}"
 
 - name: MapR | Hue | Installation de Hue sur les noeuds clients
   package: pkg=mapr-hue-{{ mapr_hue_version }}* state=latest
@@ -7,8 +19,32 @@
   package: pkg=mapr-hue-livy-{{ mapr_hue_version }}* state=latest
   tags: package
 
+- name: MapR | Hue | Copy hue keys to remote
+  copy:
+    src: "{{ hue_keys_basepath }}/{{ item }}"
+    dest: "/opt/mapr/hue/hue-{{ mapr_hue_version }}/desktop/conf/{{ item }}"
+  with_items:
+    - hue.key
+    - hue.pem
+
+- name:  MapR | Hue | Check if keys exists in the directory {{ hue_keys_basepath }}
+  delegate_to: localhost
+  stat: path="{{ hue_keys_basepath }}"
+  register: hue_keys
+  check_mode: no
+  tags: always
+
 - name: MapR | Hue | Configure Hue.ini
-  template: src=hue.ini.j2 dest=/opt/mapr/hue/hue-{{ mapr_hue_version }}/desktop/conf/hue.ini backup=no
+  template: src="hue-{{ mapr_hue_version }}.ini" dest=/opt/mapr/hue/hue-{{ mapr_hue_version }}/desktop/conf/hue.ini backup=no
+  tags: hue-templatize-config
+
+- name: MapR | Hue | Configure Livy
+  template: src="hue-livy-{{ mapr_hue_version }}.conf" dest=/opt/mapr/hue-livy/hue-livy-{{ mapr_hue_version }}/conf/livy.conf backup=no
+  when: "{{ mapr_hue_version | major_minor == '3.10' }}"
+  tags: livy-templatize-config
+
+- name: MapR | Hue | Configure hue log.conf
+  template: src=hue_log_conf.j2 dest=/opt/mapr/hue/hue-{{ mapr_hue_version }}/desktop/conf/log.conf backup=yes
 
 - name: MapR | Hue | Configure warden for multiple hue (non active/passive)
   lineinfile: dest={{ item }} regexp="services=hue" line="services=hue:all"
@@ -17,17 +53,22 @@
     - "/opt/mapr/conf/conf.d/warden.hue.conf"
   notify: Restart Warden
 
-
 - name: MapR | Hue | Configure warden for multiple livy (non active/passive)
-  lineinfile: dest={{ item }} regexp="services=livy" line="services=livy:all"
-  with_items:
-    - "/opt/mapr/hue/hue-{{ mapr_hue_version }}/desktop/conf/warden.livy.conf"
-    - "/opt/mapr/conf/conf.d/warden.livy.conf"
+  lineinfile: dest=/opt/mapr/conf/conf.d/warden.livy.conf regexp="services=livy" line="services=livy:all"
   notify: Restart Warden
 
-- meta: flush_handlers
+- name: MapR | Hue | Configure warden for multiple livy (non active/passive)
+  lineinfile: dest=/opt/mapr/hue/hue-{{ mapr_hue_version }}/desktop/conf/warden.livy.conf regexp="services=livy" line="services=livy:all"
+  when: mapr_hue_version != "3.12.0"
+  notify: Restart Warden
 
-- include: configure.yml
+- name: MapR | Hue | sync and migrate hue database
+  shell: |
+    source ./activate && ./hue syncdb --noinput && ./hue migrate
+  args:
+    chdir: "/opt/mapr/hue/hue-{{ mapr_hue_version }}/build/env/bin"
+
+- meta: flush_handlers
 
 - name: MapR | Hue | Restart Hue
   command: maprcli node services -name hue -action restart -nodes {{ inventory_hostname }}
@@ -36,34 +77,5 @@
   delay: 20
   until: "'hue is not configured on node' not in hue_service_state.stdout "
 
-
 - name: MapR | Hue | Wait for website
   wait_for: port={{ hue.webserver_port }}
-
-- name: MapR | Hue | Verify ldap connectivity if required
-  command: /opt/mapr/hue/hue-{{ mapr_hue_version }}/build/env/bin/hue sync_ldap_users_and_groups
-  register: sync_result
-  failed_when: "'ldap_open_defconn: successful' not in sync_result.stderr"
-  when: "{{ use_ldap }}"
-
-- name: MapR | Hue | Lookup is Hue Mysql db is already initialized
-  command: mysql --database {{ hue.db_name }} -u {{ hue.db_user }} -p{{ hue.db_passwd }} -h {{ groups['mapr-ha-node'][0] }} -e "show tables;"
-  register: mysql_result
-  changed_when: "{{ 'auth_group' not in mysql_result.stdout }}"
-
-- name: MapR | Hue | Initialize MySQL db for Hue
-  command: /opt/mapr/hue/hue-{{ mapr_hue_version }}/build/env/bin/hue syncdb --noinput
-  when: "{{ 'auth_group' not in mysql_result.stdout}}"
-
-- name: MapR | Hue | Lookup is Hue Mysql db is already migrated
-  command: mysql --database {{ hue.db_name }} -u {{ hue.db_user }} -p{{ hue.db_passwd }} -h {{ groups['mapr-ha-node'][0] }} -e "show tables;"
-  register: mysql_result
-  changed_when: "{{ 'desktop_settings' not in mysql_result.stdout }}"
-
-- name: MapR | Hue | Apply migration MySQL db for Hue
-  command: /opt/mapr/hue/hue-{{ mapr_hue_version }}/build/env/bin/hue migrate
-  when: "{{ 'desktop_settings' not in mysql_result.stdout}}"
-
-- name: MapR | Hue | Restart Hue for refreshing ldap and mysql config
-  command: maprcli node services -name hue -action restart -nodes {{ inventory_hostname }}
-
