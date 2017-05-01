@@ -1,0 +1,10 @@
+# {{ ansible_managed }}
+DEVICE=eth1
+BOOTPROTO=dhcp
+ONBOOT="yes"
+TYPE=ethernet
+# When boot proto is defined at dhcp, DEFROUTE. Don't overrides dhclients args else the gateway of this devices will be the
+# default route. DHCLIENT with routers and dns removed.
+DHCLIENTARGS="-R subnet-mask,broadcast-address,time-offset,host-name,nis-domain,nis-servers,ntp-servers,interface-mtu"
+NOZEROCONF=yes
+PEERDNS=no

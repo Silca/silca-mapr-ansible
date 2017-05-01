@@ -8,6 +8,11 @@
     force_stop: true
     state: absent
 
+- name: LXD | Delete zvolume
+  delegate_to: localhost
+  command: zfs destroy lxd/{{ inventory_hostname }}
+  ignore_errors: true
+
 - name: LXD | Create container
   delegate_to: localhost
   become: true
@@ -27,18 +32,26 @@
       security.privileged: "true"
       raw.apparmor: "mount fstype=nfs,"
 
-- name: LXD | Delete zvolume
-  delegate_to: localhost
-  command: zfs destroy lxd/{{ inventory_hostname }}
-  ignore_errors: true
-
 - name: LXD | Create zvolume
   delegate_to: localhost
-  command: zfs create -V 30G lxd/{{ inventory_hostname }}
+  command: zfs create -V 30G lxd/{{ inventory_hostname }} creates=/dev/zvol/lxd/{{ inventory_hostname }}
 
 - name: LXD | Add volume
   delegate_to: localhost
   command: lxc config device add {{ inventory_hostname }} volto-{{ inventory_hostname }} unix-block path=/dev/zvol/lxd/{{ inventory_hostname }}
+
+- name: LXC | Add private network interface
+  delegate_to: localhost
+  command: lxc config device add {{ inventory_hostname}} eth1 nic nictype=bridged parent=lxd-private name=eth1
+
+- name: LXC | Create network config files for private network interface
+  template: src="ifcfg-private_eth1" dest="/etc/sysconfig/network-scripts/ifcfg-eth1" owner=root group=root mode=0644
+
+- name: LXC | Restart container to mount private network
+  delegate_to: localhost
+  lxd_container:
+    name: "{{ inventory_hostname }}"
+    state: restarted
 
 - name: LXD | Domain | Configure Yum.conf
   template: src=etc_yum.conf.j2 dest=/etc/yum.conf owner=root group=root mode=0755
