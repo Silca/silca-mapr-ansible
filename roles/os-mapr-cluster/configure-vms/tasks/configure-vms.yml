@@ -44,7 +44,7 @@
     - repo: "CentOS-Base.repo"
     - repo: "epel.repo"
     - repo: "CentOS-fasttrack.repo"
-  when: "{{ not yum_with_proxy }}"
+  when:  not yum_with_proxy
 
 - name: Add Centos Repo
   template:
@@ -56,4 +56,4 @@
   with_items:
     - { src: "etc_yum.repos.d_CentOS6-Base.repo.j2", dest: "CentOS-Base.repo" }
     - { src: "etc_yum.repos.d_CentOS6-Epel.repo.j2", dest: "epel.repo" }
-  when: "{{ not yum_with_proxy }}"
+  when:  not yum_with_proxy

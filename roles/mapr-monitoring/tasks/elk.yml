@@ -23,7 +23,7 @@
   package: pkg="{{ item }}" state=latest
   with_items:
    - mapr-kibana
-  when: "{{ inventory_hostname == groups['mapr-monitoring'][0] }}"
+  when:  inventory_hostname == groups['mapr-monitoring'][0]
   tags: package
 
 - name: MapR | Monitoring | Check mount NFS
@@ -63,4 +63,4 @@
   wait_for: port={{ item }}
   with_items:
     - "{{ kibana.port }}"
-  when: "{{ inventory_hostname == groups['mapr-monitoring'][0] }}"
+  when:  inventory_hostname == groups['mapr-monitoring'][0]

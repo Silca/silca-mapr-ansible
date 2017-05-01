@@ -37,7 +37,7 @@
 
 - name: MaprR | Apply sysconfig
   command: sysctl -p
-  when: "{{ platform != 'lxc' }}"
+  when: platform != 'lxc'
 
 - name: MapR | Creation du groupe mapr
   group: name=mapr gid=5000 state=present
@@ -79,20 +79,20 @@
 
 - name: MapR | Sysctl | swappiness
   sysctl: name=vm.swappiness value=0 state=present
-  when: "{{ platform != 'lxc' }}"
+  when: platform != 'lxc'
 
 
 - name: MapR | Sysctl | overcommit_memory
   sysctl: name=vm.overcommit_memory value=0 state=present
-  when: "{{ platform != 'lxc' }}"
+  when: platform != 'lxc'
 
 - name: MapR | Sysctl | tcp_retries2
   sysctl: name="net.ipv4.tcp_retries2" value=5 state=present ignoreerrors=yes
-  when: "{{ platform != 'lxc' }}"
+  when: platform != 'lxc'
 
 - name: MapR | Sysctl | disable_ipv6
   sysctl: name="net.ipv6.conf.all.disable_ipv6" value=1 state=present ignoreerrors=yes
-  when: "{{ platform != 'lxc' }}"
+  when: platform != 'lxc'
 
 - name: MapR | Sysctl | rpcbind
   service: name=rpcbind enabled=yes state=started
@@ -128,12 +128,12 @@
 #- name: MapR | Create a disk index file for MapR
 #  command: fallocate -l 40G {{ item }} creates="{{ item }}"
 #  with_items: "{{ mapr_maprfs_volumes }}"
-#  when: "{{ platform == 'lxc' }}"
+#  when: platform == 'lxc'
 
 - name: MapR | Templatize tmp_disks.txt.j2
   template: src=tmp_disks.txt.j2 dest=/tmp/disks.txt owner=root group=root mode=0755
-  when: "{{ platform != 'lxc' }}"
+  when: platform != 'lxc'
 
 - name: MapR | Templatize tmp_disks.txt.j2
   template: src=tmp_disks_lxc.txt.j2 dest=/tmp/disks.txt owner=root group=root mode=0755
-  when: "{{ platform == 'lxc' }}"
+  when:  platform == 'lxc'

@@ -5,4 +5,4 @@
 
 - name: Mapr | Site | Copy cluster infos
   copy: src="/tmp/cluster_infos.json" dest=/var/tmp mode=0644
-  when: "{{ inventory_hostname in groups['mapr-ha-node'] }}"
+  when:  inventory_hostname in groups['mapr-ha-node']

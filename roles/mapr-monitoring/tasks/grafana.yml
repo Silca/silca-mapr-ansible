@@ -7,11 +7,11 @@
    - gnuplot
   tags: package
 
-- name: MapR | Monitoring | Install grafana and kibana only on first node
+- name: MapR | Monitoring | Install grafana and kibana only on first monitoring node
   package: pkg="{{ item }}" state=latest
   with_items:
    - mapr-grafana
-  when: "{{ inventory_hostname == groups['mapr-monitoring'][0]}}"
+  when:  inventory_hostname == groups['mapr-monitoring'][0]
   tags: "package"
 
 
@@ -26,7 +26,7 @@
     -newkey rsa:2048
     -keyout /tmp/grafana.key
     -out /tmp/grafana.pem
-  when: "{{ inventory_hostname == groups['mapr-monitoring'][0]}}"
+  when:  inventory_hostname == groups['mapr-monitoring'][0]
 
 - name: MapR | Monitoring | Copy self signed certificate to node
   copy:
@@ -36,7 +36,7 @@
   with_items:
     - grafana.pem
     - grafana.key
-  when: "{{ inventory_hostname == groups['mapr-monitoring'][0]}}"
+  when:  inventory_hostname == groups['mapr-monitoring'][0]
 
 - name: MapR | Monitoring | Templatize Grafana.ini
   template:
@@ -45,7 +45,7 @@
     owner: mapr
     group: mapr
     mode: "0644"
-  when: "{{ inventory_hostname == groups['mapr-monitoring'][0]}}"
+  when:  inventory_hostname == groups['mapr-monitoring'][0]
 
 - name: MapR | Monitoring | Configure Grafana
   command: |
@@ -63,7 +63,7 @@
   wait_for: port={{ item }}
   with_items:
     - "{{ grafana.port }}"
-  when: "{{ inventory_hostname == groups['mapr-monitoring'][0]}}"
+  when:  inventory_hostname == groups['mapr-monitoring'][0]
 
 - name: MapR | Monitoring | List all datasources
   delegate_to: localhost
@@ -80,7 +80,7 @@
   register: list_datasources_response
   until: list_datasources_response.status == 200
   delay: 1
-  when: "{{ inventory_hostname == groups['mapr-monitoring'][0]}}"
+  when:  inventory_hostname == groups['mapr-monitoring'][0]
   tags: list_datasources
 
 
@@ -99,7 +99,7 @@
     force_basic_auth: true
   environment:
     http_proxy: ''
-  when: "{{ inventory_hostname == groups['mapr-monitoring'][0] and list_datasources_response.json|length == 0 }}"
+  when:  inventory_hostname == groups['mapr-monitoring'][0] and list_datasources_response.json|length == 0
   tags: import_dashboard
 
 - name: MapR | Monitoring | Add Dashboard
@@ -121,5 +121,5 @@
     - dashboard_cldb.json
   environment:
     http_proxy: ''
-  when: "{{ inventory_hostname == groups['mapr-monitoring'][0]}}"
+  when:  inventory_hostname == groups['mapr-monitoring'][0]
   tags: import_dashboard

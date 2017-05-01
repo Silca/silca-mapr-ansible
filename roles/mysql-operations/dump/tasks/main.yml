@@ -12,14 +12,14 @@
 
 - name: MySQL Dump | Dump databases from ha node master
   mysql_db: state=dump name=all target="{{ mysql_dump_directory }}/{{ mysql_dump_file_name }}"
-  when: "{{ inventory_hostname == groups['mapr-ha-node'][0] }}"
+  when:  inventory_hostname == groups['mapr-ha-node'][0]
 
 - name: MySQL Dump | Fetch dump from master
   fetch:
     src: "{{ mysql_dump_directory }}/{{ mysql_dump_file_name }}"
     dest: "/tmp/{{ mysql_dump_file_name }}"
     flat: yes
-  when: "{{ inventory_hostname == groups['mapr-ha-node'][0] }}"
+  when:  inventory_hostname == groups['mapr-ha-node'][0]
 
 - name: MySQL Dump | Copy dump backup directory
   copy:
@@ -28,4 +28,4 @@
     owner: root
     group: root
     mode: 0755
-  when: "{{ groups['mapr-ha-node'] }}"
+  when:  groups['mapr-ha-node']

@@ -4,12 +4,12 @@
 
 - name: MapR | HTTPFS | Wait for HTTPFS Service
   wait_for: port={{ httpfs.port }}
-  when: "{{ groups['mapr-httpfs'] | length == 1 }}"
+  when:  groups['mapr-httpfs'] | length == 1
 
 - name: MapR | HTTPFS | Restart HTTPFS
   command: maprcli node services -name httpfs -action restart -nodes {{ inventory_hostname }}
-  when: "{{ groups['mapr-httpfs'] | length == 1  }}"
+  when:  groups['mapr-httpfs'] | length == 1
 
 - name: MapR | HTTPFS | Wait for website
   wait_for: port={{ httpfs.port }}
-  when: "{{ groups['mapr-httpfs'] | length == 1 }}"
+  when:  groups['mapr-httpfs'] | length == 1

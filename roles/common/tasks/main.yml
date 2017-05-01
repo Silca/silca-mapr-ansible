@@ -10,7 +10,7 @@
     - repo: "CentOS-Base.repo"
     - repo: "epel.repo"
     - repo: "CentOS-fasttrack.repo"
-  when: "{{ not yum_with_proxy }}"
+  when:  not yum_with_proxy
 
 - name: Add Centos Repo for Pulp
   template:
@@ -22,7 +22,7 @@
   with_items:
     - { src: "etc_yum.repos.d_centos6-base_pulp.repo.j2", dest: "CentOS-Base.repo" }
     - { src: "etc_yum.repos.d_centos6-epel_pulp.repo.j2", dest: "epel.repo" }
-  when: "{{ not yum_with_proxy }}"
+  when:  not yum_with_proxy
 
 
 - name: Add Centos Repo for Squid
@@ -35,11 +35,11 @@
   with_items:
     - { src: "etc_yum.repos.d_centos6-base.repo.j2", dest: "CentOS-Base.repo" }
     - { src: "etc_yum.repos.d_centos6-epel.repo.j2", dest: "epel.repo" }
-  when: "{{ not yum_with_proxy }}"
+  when:  not yum_with_proxy
 
 - name: Removing fast mirror plugins to avoid cache miss
   file: path=/etc/yum/pluginconf.d/fastestmirror.conf state=absent
-  when: "{{ yum_with_proxy }}"
+  when:  yum_with_proxy
 
 
 - name: Common | Install liselinux python for deactivate by Ansible selinux
@@ -72,7 +72,7 @@
   service: name="{{ item }}" state=stopped enabled=false
   with_items:
     - iptables
-  when: "{{  platform != 'lxc' and ansible_distribution_major_version == '6' }}"
+  when:   platform != 'lxc' and ansible_distribution_major_version == '6'
 
 - name: Common | Ensures .bashrc.d dir exists
   file: path=/root/.bashrc.d state=directory
@@ -147,16 +147,16 @@
 - name: Common | Try to sync the chrony
   shell: chronyc waitsync 3
   ignore_errors: true
-  when: "{{ platform != 'local' and platform != 'lxc' }}"
+  when:  platform != 'local' and platform != 'lxc'
   tags: configure-chrony
 
 - name: Common | Set default java version
   alternatives: name=java path=/usr/lib/jvm/java-1.8.0-openjdk-amd64/bin/java
-  when: "{{ platform != 'lxc' }}"
+  when: platform != 'lxc'
   tags: alternatives
 
 
 - name: Common | Set default javac version
   alternatives: name=javac path=/usr/lib/jvm/java-1.8.0-openjdk.x86_64/bin/javac
-  when: "{{ platform != 'lxc' }}"
+  when: platform != 'lxc'
   tags: alternatives

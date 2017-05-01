@@ -18,23 +18,23 @@
 
 - name: MapR | Sqoop2 | Templatize Sqoop server configuration for Ecosystem < 2.0.0
   template: src=sqoop.properties.MEP1 dest="/opt/mapr/sqoop/sqoop-{{ mapr_sqoop2_version }}/server/conf/sqoop.properties" owner=mapr group=mapr
-  when: "{{ mapr_mep | major == '1' }}"
+  when:  mapr_mep | major == '1'
 
 - name: MapR | Sqoop2 | Templatize Sqoop server configuration for Ecosystem 2.0.0
   template: src=sqoop.properties.MEP2+ dest="/opt/mapr/sqoop/sqoop-{{ mapr_sqoop2_version }}/conf/sqoop.properties" owner=mapr group=mapr
-  when: "{{ mapr_mep | major != '1' }}"
+  when:  mapr_mep | major != '1'
 
 - name: MapR | Sqoop2 | Force Flush handlers (for Warden)
   meta: flush_handlers
 
 - name: MapR | Sqoop2 | Wait for Sqoop 2 server
   wait_for: port="{{ sqoop2.server_port }}"
-  when: "{{ groups['mapr-sqoop2'] | length == 1 }}"
+  when:  groups['mapr-sqoop2'] | length == 1
 
 - name: MapR | Sqoop2 | Test Homepage
   uri:
     url: http://{{ ansible_default_ipv4.address }}:{{ sqoop2.server_port }}/sqoop/version
   register: sqoop_response
-  when: "{{ groups['mapr-sqoop2'] | length == 1 }}"
+  when:  groups['mapr-sqoop2'] | length == 1
   failed_when: sqoop_response.json['build-version'] is not defined
   tags: smoke-test

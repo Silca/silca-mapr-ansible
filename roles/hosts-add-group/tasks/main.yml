@@ -1,6 +1,6 @@
 - name: Manage Hosts | Disable selinux
   selinux: state=disabled
-  when: "{{ platform != 'lxc' }}"
+  when: platform != 'lxc'
 
 - name: "Manage Hosts | Gathering and generate Hosts file with dynamic hosts group: {{ dynamic_hosts_group }}"
   lineinfile:

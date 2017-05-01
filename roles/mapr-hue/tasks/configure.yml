@@ -13,7 +13,7 @@
     -newkey rsa:2048
     -keyout /tmp/{{ inventory_hostname }}/hue.key
     -out /tmp/{{ inventory_hostname }}/hue.pem
-  when: "{{ not hue_with_certificat }}"
+  when:  not hue_with_certificat
 
 - name: MapR | Hue | Copy self signed certificate to node
   copy:
@@ -23,7 +23,7 @@
   with_items:
     - hue.pem
     - hue.key
-  when: "{{ not hue_with_certificat and inventory_hostname in groups['mapr-node'] }}"
+  when:  not hue_with_certificat and inventory_hostname in groups['mapr-node']
 
 - name: MapR | Hue | Copy hue keys to remote
   copy:
@@ -32,4 +32,4 @@
   with_items:
     - hue.key
     - hue.pem
-  when: "{{ hue_with_certificat }}"
+  when:  hue_with_certificat

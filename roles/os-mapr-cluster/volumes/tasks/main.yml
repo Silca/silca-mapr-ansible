@@ -8,7 +8,7 @@
     display_name: "{{ inventory_hostname }}_{{ item }}"
     endpoint_type: "{{ os_endpoint_type }}"
   with_items: [1, 2, 3, 4]
-  when: "{{ inventory_hostname in groups['mapr-node'] }}"
+  when:  inventory_hostname in groups['mapr-node']
   tags: "cindertests"
 
 - name: Openstack | Create Admin node
@@ -20,7 +20,7 @@
     size: "{{ os_volume_size }}"
     display_name: "{{ inventory_hostname }}_data"
     endpoint_type: "{{ os_endpoint_type }}"
-  when: "{{ inventory_hostname in groups['mapr-ha-node'] }}"
+  when:  inventory_hostname in groups['mapr-ha-node']
   tags: "cindertests"
 
 # Attaches a volume to a compute host
@@ -33,7 +33,7 @@
     volume: "{{ inventory_hostname }}_{{ item }}"
     endpoint_type: "{{ os_endpoint_type }}"
   with_items: [1, 2, 3, 4]
-  when: "{{ inventory_hostname in groups['mapr-node'] }}"
+  when:  inventory_hostname in groups['mapr-node']
   tags: "cindertests"
 
 # Attaches a volume to a compute host
@@ -45,5 +45,5 @@
     server: "{{ inventory_hostname }}"
     volume: "{{ inventory_hostname }}_data"
     endpoint_type: "{{ os_endpoint_type }}"
-  when: "{{ inventory_hostname in groups['mapr-ha-node'] }}"
+  when:  inventory_hostname in groups['mapr-ha-node']
   tags: "cindertests"

@@ -1,8 +1,8 @@
 
 - name: Openstack | Make Filesystem for Admin node
   filesystem: dev=/dev/vdb fstype=ext4
-  when: "{{ inventory_hostname in groups['mapr-ha-node'] }}"
+  when:  inventory_hostname in groups['mapr-ha-node']
 
 - name: Openstack | Mount data volume for Admin node
   mount: name=/data src=/dev/vdb fstype=ext4 state=mounted
-  when: "{{ inventory_hostname in groups['mapr-ha-node'] }}"
+  when:  inventory_hostname in groups['mapr-ha-node']

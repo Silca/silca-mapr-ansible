@@ -4,7 +4,7 @@
     - elasticsearch
     - kibana
     - logstash
-  when: "{{ inventory_hostname in groups['mapr-ha-node']}}"
+  when:  inventory_hostname in groups['mapr-ha-node']
   ignore_errors: true
 
 - name: ELK - Clean | Stop Service on Mapr nodes
@@ -12,14 +12,14 @@
   with_items:
     - logstash
     - filebeat
-  when: "{{ inventory_hostname in groups['mapr-node']}}"
+  when:  inventory_hostname in groups['mapr-node']
   ignore_errors: true
 
 - name: ELK - Clean | Clean packages on Mapr node
   package: name="{{ item }}" state=absent
   with_items:
     - filebeat
-  when: "{{ inventory_hostname in groups['mapr-node'] }}"
+  when:  inventory_hostname in groups['mapr-node']
 
 - name: ELK - Clean | Clean packages on Ha node
   package: name="{{ item }}" state=absent
@@ -29,7 +29,7 @@
     - filebeat
     - kibana
     - logstash
-  when: "{{ inventory_hostname in groups['mapr-ha-node'] }}"
+  when:  inventory_hostname in groups['mapr-ha-node']
 
 - name: ELK - Clean | Delete old directories on Mapr-Node
   file: path="{{ item }}" state=absent
@@ -42,7 +42,7 @@
       - /etc/filebeat
       - /opt/kibana
   notify: Invalidate Yum Cache
-  when: "{{ inventory_hostname in groups['mapr-node'] }}"
+  when:  inventory_hostname in groups['mapr-node']
 
 
 - name: ELK - Clean | Delete old directories on Mapr ha-node
@@ -58,4 +58,4 @@
       - /etc/filebeat
       - /opt/kibana
   notify: Invalidate Yum Cache
-  when: "{{ inventory_hostname in groups['mapr-ha-node'] }}"
+  when:  inventory_hostname in groups['mapr-ha-node']

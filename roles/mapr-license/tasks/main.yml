@@ -1,10 +1,10 @@
 - name: MapR | Start Zookeeper
   service: name=mapr-zookeeper state=restarted
-  when: "{{ inventory_hostname in groups['mapr-zookeeper']}}"
+  when:  inventory_hostname in groups['mapr-zookeeper']
 
 - name: MapR | Wait for Zookeeper to be ready
   wait_for: port="{{ zookeeper.port }}"
-  when: "{{ inventory_hostname in groups['mapr-zookeeper'] }}"
+  when:  inventory_hostname in groups['mapr-zookeeper']
 
 
 - name: MapR | Check zookeeper status
@@ -13,7 +13,7 @@
   until: "'zk_version' in zk_status.stdout"
   retries: 5
   failed_when: "'zk_version' not in zk_status.stdout"
-  when: "{{ inventory_hostname in groups['mapr-zookeeper'] }}"
+  when:  inventory_hostname in groups['mapr-zookeeper']
 
 - name: MapR | Copy  licence rpm (Golden License)
   copy: src=license.rpm dest=/tmp
@@ -23,18 +23,18 @@
 
 - name: MapR | Copy licence
   copy: src=mapr-license-{{ licence_type }}.txt dest=/tmp
-  when: "{{ inventory_hostname == groups['mapr-cldb'][0] }}"
+  when:  inventory_hostname == groups['mapr-cldb'][0]
 
 - name: MapR | Start Zookeeper
   service: name=mapr-zookeeper state=started
-  when: "{{ inventory_hostname in groups['mapr-zookeeper'] }}"
+  when:  inventory_hostname in groups['mapr-zookeeper']
 
 - name: MapR | Start Warden
   service: name=mapr-warden state=started
 
 - name: MapR | Wait for Cldb to be ready
   wait_for: port="{{ cldb.port }}"
-  when: "{{ inventory_hostname in groups['mapr-cldb'] }}"
+  when:  inventory_hostname in groups['mapr-cldb']
 
 - name: MapR | Activate/Reactivate licence on the previous node
   command: maprcli license add -license /tmp/mapr-license-{{ licence_type }}.txt -is_file true
@@ -44,4 +44,4 @@
   delay: 30
   changed_when: result.stdout.find('license exists') == -1
   failed_when: result|failed and result.stdout.find('license exists') == -1
-  when: "{{ inventory_hostname == groups['mapr-cldb'][0] }}"
+  when:  inventory_hostname == groups['mapr-cldb'][0]

@@ -7,7 +7,7 @@
   package: pkg={{ item }}
   with_items:
     - epel-release
-  when: "{{ yum_with_proxy }}"
+  when:  yum_with_proxy
   tags: package
 
 - name: Openstack | Install dependencies (CloudInit)

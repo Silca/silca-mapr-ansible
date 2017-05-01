@@ -11,4 +11,4 @@
     line: "{{ item.ip }} {{ item.name }}"
     state: present
   with_items: "{{ static_hosts }}"
-  when: "{{ static_hosts is defined }}"
+  when:  static_hosts is defined

@@ -5,17 +5,17 @@
   any_errors_fatal: true
   roles:
     - { role: hosts-reset,
-        when: "{{ inventory_hostname in groups['mapr-node'] or inventory_hostname in groups['mapr-ha-node']}}",
+        when: inventory_hostname in groups['mapr-node'] or inventory_hostname in groups['mapr-ha-node'],
         tags: ["hosts-reset", "hosts-add-group"] }
     - { role: hosts-add-group, dynamic_hosts_group: "mapr-node",
-        when: "{{ inventory_hostname in groups['mapr-node'] or inventory_hostname in groups['mapr-ha-node']}}",
+        when: inventory_hostname in groups['mapr-node'] or inventory_hostname in groups['mapr-ha-node'],
         tags: "hosts-add-group" }
     - { role: hosts-add-group, dynamic_hosts_group: "mapr-ha-node",
-        when: "{{ inventory_hostname in groups['mapr-node'] or inventory_hostname in groups['mapr-ha-node']}}",
+        when: inventory_hostname in groups['mapr-node'] or inventory_hostname in groups['mapr-ha-node'],
         tags: "hosts-add-group"  }
     - { role: hosts-add-static,
         static_hosts: "{{ additionnal_hosts }}",
-        when: "{{ additionnal_hosts is defined }}",
+        when: additionnal_hosts is defined,
         tags: hosts-add-static
     }
 
@@ -26,12 +26,12 @@
     - { role: ssh-keys, user: "root", tags: [ mapr-install-sshkeys ] }
     - { role: mapr-haproxy, tags: [ mapr-install-haproxy ] }
     - { role: mysql-server, tags: [ mapr-install-mysql ] }
-    - { role: mysql-replication, tags: [ mapr-install-mysql-replication ], when: "{{ groups['mapr-ha-node']|length > 1 }}" }
+    - { role: mysql-replication, tags: [ mapr-install-mysql-replication ], when: groups['mapr-ha-node']|length > 1 }
 
 - hosts: mapr-mock-ldapserver
   any_errors_fatal: true
   roles:
-    - { role: ldap-server, when: "{{ use_ldap }}", tags: [ mapr-install-ldap-server ] }
+    - { role: ldap-server, when: use_ldap , tags: [ mapr-install-ldap-server ] }
 
 - hosts: mapr-node
   any_errors_fatal: true

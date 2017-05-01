@@ -50,7 +50,7 @@
     src: etc_map.d_rstudio.j2
     dest: /etc/pam.d/rstudio
   notify: Restart Warden
-  when: "{{ use_ldap }}"
+  when:  use_ldap
 
 - name: MapR | R Studio Server |  Templatize Warden script for R Studio Server
   template:

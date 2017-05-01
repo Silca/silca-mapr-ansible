@@ -7,7 +7,7 @@
     - mysql
     - mysql-server
     - MySQL-python
-  when: "{{  ansible_distribution_major_version == '6' }}"
+  when:   ansible_distribution_major_version == '6'
   tags: package
 
 - name: MapR | MySQL | Install mariaDB server (CentOS 7) for metastore
@@ -16,7 +16,7 @@
     - mysql
     - mariadb-server
     - MySQL-python
-  when: "{{  ansible_distribution_major_version == '7' }}"
+  when:   ansible_distribution_major_version == '7'
   tags: package
 
 - name: MapR | MySQL | Bind only on 127.0.0.1 ( ha proxy for external)

@@ -12,7 +12,7 @@
       max_binlog_size = {{ mysql_max_binlog_size }}
       binlog_format = {{ mysql_binlog_format }}
   notify: restart MySQL
-  when: "{{ inventory_hostname == groups['mapr-ha-node'][0] }}"
+  when: inventory_hostname == groups['mapr-ha-node'][0]
 
 - name: MySQL Replication | Add configuration to slave
   blockinfile:
@@ -24,7 +24,7 @@
       relay-log = relay-bin
       relay-log-index = relay-bin.index
   notify: restart MySQL
-  when: "{{ inventory_hostname == groups['mapr-ha-node'][1] }}"
+  when: inventory_hostname == groups['mapr-ha-node'][1]
 
 - name: MySQL Replication | Flush Handlers
   meta: flush_handlers
@@ -41,18 +41,18 @@
   mysql_replication: mode=getslave
   ignore_errors: true
   register: slave
-  when: "{{ inventory_hostname == groups['mapr-ha-node'][1] }}"
+  when: inventory_hostname == groups['mapr-ha-node'][1]
 
 - name: MySQL Replication | Check master replication status
   mysql_replication: mode=getmaster
   delegate_to: "{{ groups['mapr-ha-node'][0] }}"
   register: master
-  when: "{{ inventory_hostname == groups['mapr-ha-node'][1] }}"
+  when: inventory_hostname == groups['mapr-ha-node'][1]
 
 
 - name: MySQL Replication | Stop replication on slave
   mysql_replication: mode=stopslave
-  when: "{{ inventory_hostname == groups['mapr-ha-node'][1] }}"
+  when: inventory_hostname == groups['mapr-ha-node'][1]
 
 - name: MySQL Replication | Configure replication on the slave
   mysql_replication:
@@ -62,25 +62,25 @@
     master_password: "{{ vault_ha_mysql_replication_password }}"
     master_log_file: "{{ master.File }}"
     master_log_pos: "{{ master.Position }}"
-  when: "{{ inventory_hostname == groups['mapr-ha-node'][1] }}"
+  when: inventory_hostname == groups['mapr-ha-node'][1]
 
 - name: MySQL Replication | Dump databases from ha node master
   mysql_db: state=dump name=all target=/tmp/dump-replication.dmp
-  when: "{{ inventory_hostname == groups['mapr-ha-node'][0] }}"
+  when: inventory_hostname == groups['mapr-ha-node'][0]
 
 - name: MySQL Replication | Fetch dump from master
   fetch: src=/tmp/dump-replication.dmp dest=/tmp/fetched/dump-replication.dmp flat=yes
-  when: "{{ inventory_hostname == groups['mapr-ha-node'][0] }}"
+  when: inventory_hostname == groups['mapr-ha-node'][0]
 
 - name: MySQL Replication | Copy dump to slave
   copy: src=/tmp/fetched/dump-replication.dmp dest=/tmp owner=root group=root mode=0755
-  when: "{{ inventory_hostname == groups['mapr-ha-node'][1] }}"
+  when: inventory_hostname == groups['mapr-ha-node'][1]
 
 - name: MySQL Replication | Restore databases from master dump
   shell: mysql < /tmp/dump-replication.dmp
   register: mysql
-  when: "{{ inventory_hostname == groups['mapr-ha-node'][1] }}"
+  when: inventory_hostname == groups['mapr-ha-node'][1]
 
 - name: MySQL Replication | Start replication
   mysql_replication: mode=startslave
-  when: "{{ inventory_hostname == groups['mapr-ha-node'][1] }}"
+  when: inventory_hostname == groups['mapr-ha-node'][1]

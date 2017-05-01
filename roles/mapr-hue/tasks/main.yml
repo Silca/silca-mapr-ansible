@@ -1,15 +1,15 @@
 - name: MapR | Copy Mariadb compat rpm ( #MAPR-18668 )
   copy: src=MariaDB-5.5.52-centos7-x86_64-compat.rpm dest=/tmp
-  when: "{{ ansible_distribution_major_version == '7' }}"
+  when:  ansible_distribution_major_version == '7'
 
 - name: MapR | Install Mariadb compat rpm ( #MAPR-18668 )
   command: rpm -ivh --nodeps /tmp/MariaDB-5.5.52-centos7-x86_64-compat.rpm
-  when: "{{ ansible_distribution_major_version == '7' }}"
+  when:  ansible_distribution_major_version == '7'
   ignore_errors: true
 
 - name: MapR | Create a simlink for mapr ( #MAPR-18668 )
   file: src=/lib64/libsasl2.so.3.0.0 dest=/lib64/libsasl2.so.2 state=link
-  when: "{{ ansible_distribution_major_version == '7' }}"
+  when:  ansible_distribution_major_version == '7'
 
 - name: MapR | Hue | Installation de Hue sur les noeuds clients
   package: pkg=mapr-hue-{{ mapr_hue_version }}* state=latest
@@ -40,7 +40,7 @@
 
 - name: MapR | Hue | Configure Livy
   template: src="hue-livy-{{ mapr_hue_version }}.conf" dest=/opt/mapr/hue-livy/hue-livy-{{ mapr_hue_version }}/conf/livy.conf backup=no
-  when: "{{ mapr_hue_version | major_minor == '3.10' }}"
+  when:  mapr_hue_version | major_minor == '3.10'
   tags: livy-templatize-config
 
 - name: MapR | Hue | Configure hue log.conf

@@ -41,24 +41,24 @@
   with_items:
     - cloud-utils
     - dracut-modules-growroot
-  when: "{{ ansible_distribution_major_version == '6' }}"
+  when:  ansible_distribution_major_version == '6'
 
 - name: KVM | Domain | Check if root partition needs to be resized
   become: yes
   shell: growpart -N /dev/vda 1 2>&1
   register: growpart_status
   ignore_errors: true
-  when: "{{ ansible_distribution_major_version == '6' }}"
+  when:  ansible_distribution_major_version == '6'
 
 - name: KVM | Domain | Resize root volume
   become: yes
   command: growpart /dev/vda 1
-  when: "{{ growpart_status.stdout.find('NOCHANGE') == -1 and ansible_distribution_major_version == '6' }}"
+  when:  growpart_status.stdout.find('NOCHANGE') == -1 and ansible_distribution_major_version == '6'
 
 - name: KVM | Domain | Restart to apply resize
   command: reboot
   become: true
-  when: "{{ growpart_status.stdout.find('NOCHANGE') == -1 and ansible_distribution_major_version == '6' }}"
+  when:  growpart_status.stdout.find('NOCHANGE') == -1 and ansible_distribution_major_version == '6'
 
 - name: KVM | Domain | Wait for restart
   delegate_to: localhost
