@@ -62,6 +62,9 @@ grafana:
 opentsdb:
   port: 4242
 
+hbase:
+  thrift_port: 9090
+
 hive:
   db_name: hive
   db_user: hive
