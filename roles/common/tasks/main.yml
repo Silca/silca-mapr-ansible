@@ -51,10 +51,11 @@
 - name: Common | configure hostname
   hostname:
     name="{{ inventory_hostname|lower }}.{{ domain | default('local') }}"
+  when: platform != 'lxc' #https://github.com/ansible/ansible/issues/19814
 
 - name: Common | Disable selinux
   selinux: state=disabled
-  when: "{{ platform != 'lxc' }}"
+  when: platform != 'lxc'
 
 - name: Common | SSHD | Remove GSS Api Authentication
   replace: dest=/etc/ssh/sshd_config regexp="GSSAPIAuthentication yes" replace="GSSAPIAuthentication no"
@@ -130,6 +131,7 @@
     - sudo
     - mysql
     - chrony
+    - net-tools
   tags: ["package", "install-chrony"]
 
 - name: Common | Configure the servers endpoint list for chrony
@@ -149,9 +151,12 @@
   tags: configure-chrony
 
 - name: Common | Set default java version
-  alternatives: name=java path=/usr/lib/jvm/jre-1.8.0-openjdk.x86_64/bin/java
+  alternatives: name=java path=/usr/lib/jvm/java-1.8.0-openjdk-amd64/bin/java
+  when: "{{ platform != 'lxc' }}"
   tags: alternatives
+
 
 - name: Common | Set default javac version
   alternatives: name=javac path=/usr/lib/jvm/java-1.8.0-openjdk.x86_64/bin/javac
+  when: "{{ platform != 'lxc' }}"
   tags: alternatives
