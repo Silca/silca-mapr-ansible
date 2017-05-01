@@ -1,8 +1,7 @@
 ---
-mapr_release_version: 5.2.0
-mapr_mep: 1.1.0
-
-licence_type: premium
+mapr_release_version: 5.2.1
+mapr_mep: 3.0.0
+licence_type: basic
 
 
 
