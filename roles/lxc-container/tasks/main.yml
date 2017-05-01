@@ -18,13 +18,13 @@
       mode: pull
       server: https://images.linuxcontainers.org
       protocol: lxd
-      alias: centos/6/amd64
+      alias: centos/7/amd64
     state: started
     wait_for_ipv4_addresses: true
     config:
       limits.cpu: "{{ lxd_cpus_pin }}"
       limits.memory: "{{ lxd_memory }}"
-#      security.privileged: "true"
+      security.privileged: "true"
       raw.apparmor: "mount fstype=nfs,"
 
 - name: LXD | Delete zvolume
