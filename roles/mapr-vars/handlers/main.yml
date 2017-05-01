@@ -1,31 +1,35 @@
 - name: Start Zookeeper
   service: name=mapr-zookeeper state=started
-  when: "{{ inventory_hostname in groups['mapr-zookeeper'] }}"
+  when: inventory_hostname in groups['mapr-zookeeper']
 
 - name: Restart Zookeeper
   service: name=mapr-zookeeper state=restarted
-  when: "{{ inventory_hostname in groups['mapr-zookeeper'] }}"
+  when: inventory_hostname in groups['mapr-zookeeper']
 
 - name: Restart Warden
   service: name={{ item }} state=restarted
   with_items:
     - mapr-zookeeper
     - mapr-warden
-  when: "{{ inventory_hostname in groups['mapr-node'] }}"
+  when: inventory_hostname in groups['mapr-node']
   notify:
-    - Wait for nfs
-    - Check Mapr nfs mount
+    - Check Mapr fs using Hadoop ls command
+    - Check Mapr nfs mount using nfs mount (basic and premium)
+  ignore_errors: true
 
-- name: Wait for nfs
-  wait_for: port="{{ nfs.port_server }}"
-  when: "{{ inventory_hostname in groups['mapr-node'] }}"
-
-- name: Check Mapr nfs mount
+- name: Check Mapr nfs mount using nfs mount (basic and premium)
   command: ls /mapr/
   register: nfs_result
   until: nfs_result.stdout.find('{{ mapr.cluster_name }}') != -1
   retries: 30
-  when: "{{ inventory_hostname in groups['mapr-node'] }}"
+  when: licence_type != 'basic' and inventory_hostname in groups['mapr-node']
+
+- name: Check Mapr fs using Hadoop ls command
+  command: hadoop fs -ls /
+  register: hdfs_result
+  until: hdfs_result.stdout.find('var') != -1
+  retries: 30
+  when: inventory_hostname in groups['mapr-node']
 
 - name: Alternatives Java
   alternatives: name="{{ item.name }}" path="{{ item.path }}"

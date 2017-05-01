@@ -15,6 +15,10 @@
   command: /opt/mapr/bin/maprcli config save -values "{ mapr.targetversion {{ ":" }} "{{ mapr_full_version.stdout }}" }"
   when: "{{ inventory_hostname == groups['mapr-client-node'][0] }}"
 
+- name: MapR | Post Install | Create a fake nfs path for trial licence
+  file: path=/mapr/{{ mapr.cluster_name }} state=directory recurse=yes owner=mapr group=mapr mode="0755"
+  when: licence-type == 'trial'
+
 - name: MapR | Post Install | Install Python dependencies
   package: name="{{ item }}"
   with_items:

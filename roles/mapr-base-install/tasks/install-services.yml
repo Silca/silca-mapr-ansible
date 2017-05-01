@@ -51,7 +51,7 @@
 
 - name: MapR | Nfs |  Installation du service NFS
   package: pkg=mapr-nfs-{{ mapr_release_version | major_minor_patches }}* state=latest
-  when: "{{ inventory_hostname in groups['mapr-nfs'] }}"
+  when: "{{ inventory_hostname in groups['mapr-nfs'] and licence_type != 'basic' }}"
   tags: package
 
 - name: MapR | Webserver | Installation du service webserver

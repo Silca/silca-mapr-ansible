@@ -65,8 +65,8 @@
   when: "{{ groups['mapr-oozie'] | length == 1 }}"
 
 - name: MapR | Oozie | Check if /oozie/share/lib is not empty
-  command: ls /mapr/{{ mapr.cluster_name }}/oozie/share/lib
-  register: nfs_result
-  until: nfs_result.stdout.find('lib_') != -1
+  command: hadoop fs -ls /oozie/share/lib
+  register: hdfs_result
+  until: hdfs_result.stdout.find('lib_') != -1
   retries: 10
   tags: smoke-test
