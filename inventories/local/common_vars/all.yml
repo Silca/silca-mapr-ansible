@@ -1,5 +1,6 @@
 ---
 
+domain: local
 # MapR licence type
 licence_type: basic
 
