@@ -2,8 +2,8 @@
   file: path=/mapr state=directory owner=root
 
 - name: MapR | Add Nfs /mapr in /opt/mapr/conf/mapr_fstab
-  lineinfile: dest=/opt/mapr/conf/mapr_fstab regexp=":/mapr" line="{{ inventory_hostname }}:/mapr /mapr hard,nolock" create=yes
-  notify: 
+  lineinfile: dest=/opt/mapr/conf/mapr_fstab regexp=":/mapr" line="{{ inventory_hostname }}:/mapr /mapr soft,nolock" create=yes
+  notify:
     - Restart Zookeeper
     - Restart Warden
 
