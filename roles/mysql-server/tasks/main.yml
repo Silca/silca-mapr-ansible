@@ -1,11 +1,22 @@
 ---
 
+
 - name: MapR | MySQL | Install mySQL server for metastore
   package: pkg={{ item }}
   with_items:
     - mysql
     - mysql-server
     - MySQL-python
+  when: "{{  ansible_distribution_major_version == '6' }}"
+  tags: package
+
+- name: MapR | MySQL | Install mariaDB server (CentOS 7) for metastore
+  package: pkg={{ item }}
+  with_items:
+    - mysql
+    - mariadb-server
+    - MySQL-python
+  when: "{{  ansible_distribution_major_version == '7' }}"
   tags: package
 
 - name: MapR | MySQL | Bind only on 127.0.0.1 ( ha proxy for external)
@@ -15,7 +26,7 @@
   lineinfile: dest=/etc/my.cnf insertafter="\[mysqld\]" line="connect_timeout=100"
 
 - name: MapR | MySQL | Restart mysql server and start at boot
-  service: name=mysqld state=restarted enabled=true
+  service: name=mariadb state=restarted enabled=true
 
 - name: MapR | MySQL | Wait for mysql start
   wait_for: port="{{ mysql.port }}"
