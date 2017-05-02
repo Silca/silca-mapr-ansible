@@ -18,7 +18,6 @@
   command: maprcli disk list -host {{ inventory_hostname }} -system 0 -json
   register: diskinfos
 
-
 - set_fact:
      mapr_disk: "{{ diskinfos.stdout | from_json }}"
 
@@ -50,7 +49,6 @@
       -quota 200G
   become_user: mapr
   become: true
-  run_once: true
   when: nfsyarnlogsvolume.stdout.find('yarnlogs') == -1
 
 
