@@ -87,7 +87,7 @@
   wait_for: port="{{ hive.hs2_port }}"
   when:  groups['mapr-hive-server'] | length == 1 and inventory_hostname in groups['mapr-hive-server']
 
-- name: MapR | Hive | Création du répertoire /user/hive/warehouse dans HDFS
+- name: MapR | Hive | Create directory /user/hive/warehouse in HDFS
   command: hadoop fs -mkdir -p /user/hive/warehouse
   become: yes
   become_user: mapr
