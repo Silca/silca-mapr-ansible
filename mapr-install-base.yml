@@ -1,5 +1,11 @@
 ---
-- hosts: localhost
+
+- hosts: mapr-ha-node
+  remote_user: root
+  gather_facts: yes
+  any_errors_fatal: true
+  roles:
+    - { role: mysql-operations/dump, tags: [ mysql-dump, always ] }
 
 - hosts: mapr-node:mapr-ha-node:es-cluster
   any_errors_fatal: true
