@@ -52,4 +52,3 @@ hue_with_certificat: true
 
 additionnal_hosts: []
 additionnal_ports: []
-additionnal_hive_metastore_hosts: []
