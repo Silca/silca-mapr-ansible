@@ -5,13 +5,13 @@
   any_errors_fatal: true
   roles:
     - { role: hosts-reset,
-        when: "{{ inventory_hostname in groups['mapr-node'] or inventory_hostname in groups['mapr-ha-node'] }}",
+        when: "inventory_hostname in groups['mapr-node'] or inventory_hostname in groups['mapr-ha-node']",
         tags: ["hosts-reset", "hosts-add-group"] }
     - { role: hosts-add-group, dynamic_hosts_group: "mapr-node",
-        when: "{{ inventory_hostname in groups['mapr-node'] or inventory_hostname in groups['mapr-ha-node']}}",
+        when: "inventory_hostname in groups['mapr-node'] or inventory_hostname in groups['mapr-ha-node']",
         tags: "hosts-add-group" }
     - { role: hosts-add-group, dynamic_hosts_group: "mapr-ha-node",
-        when: "{{ inventory_hostname in groups['mapr-node'] or inventory_hostname in groups['mapr-ha-node']}}",
+        when: "inventory_hostname in groups['mapr-node'] or inventory_hostname in groups['mapr-ha-node']",
         tags: "hosts-add-group"  }
     - { role: hosts-add-static,
         static_hosts: "{{ additionnal_hosts }}",

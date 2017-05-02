@@ -86,19 +86,19 @@
 - name: Common | Check short hostname
   command: hostname -s
   register: short_hostname
-  failed_when: "short_hostname.stdout != '{{ inventory_hostname }}'"
+  failed_when: short_hostname.stdout != '{{ inventory_hostname }}'
   tags: smoke-test
 
 - name: Common | Check fqdn
   command: hostname -f
   register: fqdn
-  failed_when: "fqdn.stdout != '{{ inventory_hostname }}.{{ domain | default('local') }}'"
+  failed_when: fqdn.stdout != '{{ inventory_hostname }}.{{ domain | default('local') }}'
   tags: smoke-test
 
 - name: Common | Check ip
   command: hostname -i
   register: ip
-  failed_when: "ip.stdout != '{{ ansible_default_ipv4.address }}'"
+  failed_when: ip.stdout != '{{ ansible_default_ipv4.address }}'
   tags: smoke-test
 
 - name: Common | Installation de goodies yum
