@@ -1,5 +1,17 @@
+- name: MapR | Post Install | Stop Zookeeper before applying post installation
+  service: name=mapr-zookeeper state=started
+  when:  inventory_hostname in groups['mapr-zookeeper']
+  tags: package
+
+- name: MapR | Post Install | Start warden before applying post installation
+  service: name=mapr-warden state=started
+
 - name: MapR | Post Install | Give full permission to mapr user
   command: /opt/mapr/bin/maprcli acl edit -type cluster -user mapr:fc
+  retries: 10
+  delay: 20
+  register: result
+  until: result.stdout.find('Couldn\'t connect to the CLDB service') == -1
   when:  inventory_hostname == groups['mapr-client-node'][0]
 
 - name: MapR | Post Install | Enable all feature for the cluster ( for version upgrade )
