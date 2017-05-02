@@ -1,5 +1,13 @@
 ---
 
+- hosts: mapr-ha-node
+  remote_user: root
+  gather_facts: yes
+  any_errors_fatal: true
+  roles:
+    - { role: mysql-operations/dump, tags: [ mysql-dump, always ] }
+
+
 - hosts: mapr-node
   serial: "{{ rolling_update | default(true) | ternary ('30%', '100%') }}"
   roles:
@@ -54,6 +62,7 @@
     - { role: mapr-spark, tags: [ mapr-install-spark ] }
 
 - hosts: mapr-hue
+  gather_facts: true
   serial: 1
   any_errors_fatal: true
   roles:
