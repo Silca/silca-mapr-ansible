@@ -35,10 +35,12 @@
   notify: Restart Warden
 
 - name: MapR | Configure Yarn Log Aggregation | Check if the /yarnlogs volume exists
+  run_once: true
   command: hadoop fs -ls /
   register: nfsyarnlogsvolume
 
 - name: MapR | Configure Yarn Log Aggregation | Create the /yarnlogs volume
+  run_once: true
   command: |
     maprcli volume create
       -name yarnlogs

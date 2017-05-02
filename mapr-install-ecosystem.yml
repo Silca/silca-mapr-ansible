@@ -87,11 +87,11 @@
   serial: "{{ rolling_update | default(true) | ternary ('30%', '100%') }}"
   roles:
     - { role: add-extra-groupvars, tags: [ add-extra-groupvars ] }
-    - { role: mapr-kafka, when: "{{ install_kafka }}", tags: [ mapr-install-kafka ]}
+    - { role: mapr-kafka, when: install_kafka , tags: [ mapr-install-kafka ]}
 
-- hosts: mapr-monitoring
+- hosts: mapr-node
   roles:
-    - { role: mapr-monitoring, when: "{{ mapr_release_version != '5.1.0' }}", tags: [ mapr-install-monitoring ]}
+    - { role: mapr-monitoring, when: mapr_release_version != '5.1.0', tags: [ mapr-install-monitoring ]}
 
 - hosts: mapr-node:mapr-ha-node
   gather_facts: true

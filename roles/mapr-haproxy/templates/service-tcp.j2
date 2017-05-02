@@ -8,5 +8,5 @@ listen {{ item.service.name }} :{{ item.service.haproxyport }}
     balance {{ item.service.balance }}
 {% endif %}
 {% for server_node in item.service.servers|default([]) %}
-    server {{ server_node }} {{ hostvars[server_node][mapr_internal_subnet_if]['ipv4']['address'] }}:{{ item.service.serverport }} check {{ ( not loop.first and item.service.backup_strategy is defined and item.service.backup_strategy == 'only_first') | ternary('backup', '')}}
+    server {{ server_node }} {{ server_node }}:{{ item.service.serverport }} check {{ ( not loop.first and item.service.backup_strategy is defined and item.service.backup_strategy == 'only_first') | ternary('backup', '')}}
 {% endfor %}
