@@ -1,3 +1,0 @@
-dependencies:
-  - { role: add-extra-groupvars }
-  - { role: mapr-vars }

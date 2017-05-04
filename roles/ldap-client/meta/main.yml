@@ -1,6 +1,4 @@
 dependencies:
-  - { role: mapr-vars }
-  - { role: add-extra-groupvars }
   - { role: hosts-add-static,
       static_hosts: [{name: "{{ ldap_server_name }}", ip: "{{ ldap_server_address }}"}],
       tags: hosts-add-static
