@@ -10,7 +10,6 @@
 
 - name: LXD | Delete zvolume
   delegate_to: localhost
-  become: true
   command: zfs destroy lxd/{{ inventory_hostname }}
   ignore_errors: true
 
@@ -35,7 +34,6 @@
 
 - name: LXD | Create zvolume
   delegate_to: localhost
-  become: true
   command: zfs create -V 30G lxd/{{ inventory_hostname }} creates=/dev/zvol/lxd/{{ inventory_hostname }}
 
 - name: LXD | Add volume

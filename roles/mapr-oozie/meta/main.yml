@@ -1,0 +1,13 @@
+dependencies:
+  - { role: add-extra-groupvars }
+  - { role: mapr-vars }
+  - { role: mysql-operations/database,
+      mysql_db: "{{ oozie.db_name }}",
+      tags: ["mapr-mysql-oozie", "mapr-mysql-database-oozie"]
+    }
+  - { role: mysql-operations/account,
+      mysql_db: "{{ oozie.db_name }}",
+      mysql_user: "{{ oozie.db_user }}",
+      mysql_passwd: "{{ oozie.db_passwd }}",
+      tags: ["mapr-mysql-oozie", "mapr-mysql-account-oozie"]
+    }

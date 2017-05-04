@@ -1,4 +1,6 @@
 dependencies:
+  - { role: add-extra-groupvars }
+  - { role: mapr-vars }
   - { role: mysql-operations/database,
       mysql_db: "{{ hue.db_name }}",
       tags: ["mapr-mysql-hue", "mapr-mysql-database-hue"]

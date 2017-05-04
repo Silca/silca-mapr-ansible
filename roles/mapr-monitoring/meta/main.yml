@@ -1,4 +1,6 @@
 dependencies:
+  - { role: add-extra-groupvars }
+  - { role: mapr-vars }
   - { role: mysql-operations/database,
       mysql_db: "{{ grafana.db_name }}",
       tags: ["mapr-mysql-grafana", "mapr-mysql-database-grafana"]
