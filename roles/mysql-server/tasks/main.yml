@@ -26,7 +26,12 @@
   lineinfile: dest=/etc/my.cnf insertafter="\[mysqld\]" line="connect_timeout=100"
 
 - name: MapR | MySQL | Restart mysql server and start at boot
+  service: name=mysqld state=restarted enabled=true
+  when:   ansible_distribution_major_version == '6'
+
+- name: MapR | MySQL | Restart mysql server and start at boot
   service: name=mariadb state=restarted enabled=true
+  when:   ansible_distribution_major_version == '7'
 
 - name: MapR | MySQL | Wait for mysql start
   wait_for: port="{{ mysql.port }}"

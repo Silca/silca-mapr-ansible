@@ -1,0 +1,71 @@
+# this is read by the standalone daemon and embedded servers
+[server]
+
+# this is only for the mysqld standalone daemon
+[mysqld]
+
+#
+# * Galera-related settings
+#
+[galera]
+
+connect_timeout=100
+
+# Mandatory settings
+wsrep_on=ON
+
+# Path to Galera library
+wsrep_provider = /usr/lib64/galera/libgalera_smm.so
+
+# Cluster connection URL contains the IPs of node#1, node#2 and node#3
+wsrep_cluster_address = gcomm://{{ galera_wsrep_cluster_address }}
+binlog_format=row
+default_storage_engine=InnoDB
+innodb_autoinc_lock_mode=2
+
+#
+# Allow server to accept connections on all interfaces.
+#
+bind-address=0.0.0.0
+#
+# Optional setting
+#wsrep_slave_threads=1
+innodb_flush_log_at_trx_commit=0
+
+wsrep_node_address = {{ galera_wsrep_address }}
+wsrep_node_name = {{ inventory_hostname|lower }}
+
+
+# to enable debug level logging, set this to 1
+wsrep_debug = {{ galera_wsrep_debug }}
+
+# SST method
+wsrep_sst_method = {{ galera_wsrep_sst_method }}
+wsrep_sst_auth = {{ galera_wsrep_sst_auth_user }}:{{ galera_wsrep_sst_auth_password }}
+wsrep_slave_threads = {{ galera_wsrep_slave_threads }}
+
+# Cluster name
+wsrep_cluster_name = "{{ galera_cluster_name }}"
+
+# how many times to retry deadlocked autocommits
+wsrep_retry_autocommit = {{ galera_wsrep_retry_autocommit }}
+
+# this is only for embedded server
+[embedded]
+
+# This group is only read by MariaDB servers, not by MySQL.
+# If you use the same .cnf file for MySQL and MariaDB,
+# you can put MariaDB-only options here
+[mariadb]
+
+# This group is only read by MariaDB-10.1 servers.
+# If you use the same .cnf file for MariaDB of different versions,
+# use this group for options that older servers don't understand
+[mariadb-10.1]
+
+[xtrabackup]
+compress
+compact
+parallel = {{ galera_xtrabackup_threads }}
+compress-threads = {{ galera_xtrabackup_threads }}
+rebuild-threads = {{ galera_xtrabackup_threads }}

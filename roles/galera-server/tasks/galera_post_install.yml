@@ -1,0 +1,24 @@
+---
+- name: post_install | Create the local directories
+  file:
+    path: "{{ item.path }}"
+    state: "directory"
+    owner: "mysql"
+    group: "mysql"
+    mode: "0755"
+  with_items:
+    - { path: "/var/lib/mysql" }
+    - { path: "/var/log/mysql" }
+
+## Add a service for galera monitoring
+- name: post_install | Drop clustercheck (percona) script
+  copy:
+    src: clustercheck
+    dest: /usr/local/bin/clustercheck
+    mode: "0755"
+
+- name: Enable checker
+  service:
+    name: mysqlchk.socket
+    enabled: true
+    state: started

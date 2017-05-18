@@ -1,7 +1,9 @@
 - name: "MapR | MySQL | Create  MySQL database \"{{ mysql_db }}\""
   run_once: true
   delegate_to: "{{  groups['mapr-ha-node'][0] }}"
-  mysql_db: name="{{ mysql_db }}" state=present
+  mysql_db: name="{{ mysql_db }}" state=present login_unix_socket="{{ mysql_login_unix_socket }}"
+
+
 
 - name: "MapR | MySQL | Check database exists on mysql node"
   delegate_to: "{{  item }}"

@@ -1,4 +1,8 @@
+---
+
 dependencies:
   - { role: add-extra-groupvars }
   - { role: mapr-vars }
   - { role: mysql-common-vars }
+#  - galera/client
+

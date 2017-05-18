@@ -1,12 +1,5 @@
 ---
 
-- hosts: mapr-ha-node
-  remote_user: root
-  gather_facts: yes
-  any_errors_fatal: true
-  roles:
-    - { role: mysql-operations/dump, tags: [ mysql-dump, always ] }
-
 - hosts: mapr-node:mapr-ha-node:es-cluster
   any_errors_fatal: true
   roles:
@@ -31,8 +24,20 @@
     - { role: common, tags: [ common ] }
     - { role: ssh-keys, user: "root", tags: [ mapr-install-sshkeys ] }
     - { role: mapr-haproxy, tags: [ mapr-install-haproxy ] }
+
+- hosts: mapr-mysql
+  remote_user: root
+  any_errors_fatal: true
+  roles:
     - { role: mysql-server, tags: [ mapr-install-mysql ] }
-    - { role: mysql-replication, tags: [ mapr-install-mysql-replication ], when: "{{groups['mapr-ha-node']|length > 1}}" }
+    - { role: mysql-replication, tags: [ mapr-install-mysql-replication ], when: "{{ (groups['mapr-mysql']|length > 1) }}"}
+
+# Couldn't use serial 1 and any_error_fatals
+- hosts: mapr-galera
+  gather_facts: true
+  any_errors_fatal: true
+  roles:
+    - { role: galera-server, tags: [ "galera-server" ] }
 
 - hosts: mapr-mock-ldapserver
   any_errors_fatal: true

@@ -52,3 +52,8 @@ hue_with_certificat: true
 
 additionnal_hosts: []
 additionnal_ports: []
+
+# Galera settings
+## WARNING. This parameter erase the entire cluster.
+#galera_ignore_cluster_state: true
+galera_wsrep_address: "{{ ansible_default_ipv4.address }}"

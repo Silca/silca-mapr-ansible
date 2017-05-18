@@ -1,0 +1,48 @@
+---
+
+- name: Check if mysql is running
+  command: /usr/bin/mysqladmin --defaults-file=/etc/my.cnf.d/client.cnf ping
+  ignore_errors: true
+  changed_when: mysql_running.rc != 0
+  register: mysql_running
+  notify: Restart mysql
+  check_mode: no
+
+- name: Check for cluster state failure
+  fail:
+    msg: |
+      The cluster may be broken, mysql is not running but appears to be
+      installed. Fix it before re-running the playbook or override with
+      'ansible-playbook [...] -e galera_ignore_cluster_state=true'.
+  when:
+    - not galera_ignore_cluster_state | bool
+    - mysql_running.rc == 1
+    - mysql_running.stderr | search("Check that mysqld is running and that the socket")
+
+- name: Gather mysql facts
+  mysql_status_facts:
+  ignore_errors: true
+  check_mode: no
+
+- name: Check for cluster state failure
+  fail:
+    msg: |
+      The cluster may be broken, mysql is running but unable to gather mysql facts.
+      Fix it before re-running the playbook or override with
+      'ansible-playbook [...] -e galera_ignore_cluster_state=true'.
+  when:
+    - not galera_ignore_cluster_state | bool
+    - mysql_running.rc == 0
+    - mysql_status is not defined
+
+- name: Check for cluster state failure
+  fail:
+    msg: |
+      wsrep_incoming_addresses does not match across the cluster. Please fix before
+      re-running the playbooks or override with
+      'ansible-playbook [...] -e galera_ignore_cluster_state=true'.
+  with_items: "{{ play_hosts }}"
+  when:
+    - not galera_ignore_cluster_state | bool
+    - mysql_running.rc == 0
+    - mysql_status['wsrep_incoming_addresses'] != hostvars[item]['mysql_status']['wsrep_incoming_addresses']

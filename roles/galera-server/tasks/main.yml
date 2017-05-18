@@ -1,0 +1,116 @@
+---
+
+#- name: main | Include galera_cluster_state
+#  include: galera_cluster_state.yml
+
+- name: pre_install | Add repo MariaDB for galera
+  template:
+     src: mariadb.repo.j2
+     dest: "/etc/yum.repos.d/{{ item }}"
+     owner: "root"
+     group: "root"
+     mode: "0644"
+  with_items:
+    - mariadb.repo
+    - percona.repo
+  notify: Invalidate Yum Cache
+
+- name: pre_install | Install galera pre packages
+  yum: name="{{ item }}"
+  with_items:
+    - rsync
+    - socat
+    - MySQL-python
+    - percona-xtrabackup
+    - mariadb-server
+
+- name: post_install | Templatize config
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  with_items:
+    - { src: server.cnf, dest: /etc/my.cnf.d/server.cnf }
+
+- name: Stop secondary nodes
+  service: name=mysqld state=stopped
+  when: inventory_hostname != groups['mapr-galera'][0]
+
+- name: Stop primary node
+  service: name=mysqld state=stopped
+  when: inventory_hostname == groups['mapr-galera'][0]
+
+- name: Start first node with wsrep
+  command: galera_new_cluster
+  when: inventory_hostname == groups['mapr-galera'][0]
+
+- name: Create account on first node bootstrap
+  delegate_to: "{{ groups['mapr-galera'][0] }}"
+  run_once: true
+  mysql_user:
+    name: "{{ item.name }}"
+    host: "{{ item.host }}"
+    password: "{{ item.password }}"
+    priv: "{{ item.priv }}"
+    state: "{{ item.state }}"
+    login_unix_socket:  "{{ mysql_login_unix_socket }}"
+  with_items:
+    - name: "{{ galera_wsrep_sst_auth_user }}"
+      host: '%'
+      password: "{{ galera_wsrep_sst_auth_password }}"
+      priv: "*.*:ALL"
+      state: present
+    - name: "{{ galera_wsrep_sst_auth_user }}"
+      host: "localhost"
+      password: "{{ galera_wsrep_sst_auth_password }}"
+      priv: "*.*:ALL"
+      state: present
+
+- name: Start all secondary nodes
+  service: name=mysqld state=started
+  when: inventory_hostname != groups['mapr-galera'][0]
+
+- name: setup | Create galera users
+  run_once: true
+  mysql_user:
+    name: "{{ item.name }}"
+    host: "{{ item.host }}"
+    password: "{{ item.password }}"
+    priv: "{{ item.priv }}"
+    state: "{{ item.state }}"
+    login_unix_socket:  "{{ mysql_login_unix_socket }}"
+  with_items:
+    - name: "{{ galera_root_user }}"
+      host: "%"
+      password: "{{ galera_root_password }}"
+      priv: "*.*:ALL,GRANT"
+      state: present
+    - name: "{{ galera_monitoring_user }}"
+      host: '%'
+      password: "{{ galera_monitoring_user_password }}"
+      priv: "*.*:USAGE"
+      state: present
+    - name: "{{ galera_monitoring_user }}"
+      host: 'localhost'
+      password: "{{ galera_monitoring_user_password }}"
+      priv: "*.*:USAGE"
+      state: present
+    - name: "{{ galera_wsrep_sst_auth_user }}"
+      host: '%'
+      password: "{{ galera_wsrep_sst_auth_password }}"
+      priv: "*.*:ALL"
+      state: present
+    - name: "{{ galera_wsrep_sst_auth_user }}"
+      host: "localhost"
+      password: "{{ galera_wsrep_sst_auth_password }}"
+      priv: "*.*:ALL"
+      state: present
+
+- name: Setup | Create haproxy user
+  run_once: true
+  mysql_user:
+    name: "haproxy"
+    host: "%"
+

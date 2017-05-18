@@ -1,0 +1,12 @@
+# {{ ansible_managed }}
+
+########################################
+# MariaDB 10.0 CentOS repository list
+########################################
+# http://mariadb.org/mariadb/repositories/
+# baseurl=http://yum.mariadb.org/10.0/centos7-amd64
+[mariadb]
+name = MariaDB
+baseurl=http://yum.mariadb.org/10.2.5/centos7-amd64
+gpgcheck=0
+enabled=1

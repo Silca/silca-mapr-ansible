@@ -1,0 +1,27 @@
+---
+
+- name: Restart mysql
+  service:
+    name: mysql
+    state: restarted
+    enabled: yes
+    #args: "{{ (not galera_existing_cluster | bool and role == 'bootstrap') | ternary('--wsrep-new-cluster', '') }}"
+  when: not galera_running_and_bootstrapped | bool and role != 'bootstrap'
+  register: galera_restart
+  until: galera_restart|success
+  retries: 3
+  delay: 2
+
+- name: Restart mysql
+  shell: /etc/init.d/mysql stop && /etc/init.d/mysql bootstrap
+  when: not galera_running_and_bootstrapped and role == 'bootstrap'
+  register: galera_restart
+  until: galera_restart|success
+  retries: 3
+  delay: 2
+
+- name: Restart mysqlchk
+  service:
+    name: mysqlchk.socket
+    state: restarted
+    enabled: yes      

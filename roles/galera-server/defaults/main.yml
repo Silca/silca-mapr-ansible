@@ -1,0 +1,63 @@
+---
+
+### For HAProxy
+#### FIXME: Check port 9199 for state cluster and not only port 3306
+galera_service_config:
+  name: mysql-cluster
+  haproxyport: "{{ ha_proxy.mysql_port }}"
+  balance: "roundrobin"
+  options:
+    - mysql-check user haproxy
+  servers: "{{ groups['mapr-ha-node'] }}"
+  serverport: "{{ mysql.port }}"
+  type: "TCP"
+
+galera_ignore_cluster_state: false
+
+galera_running_and_bootstrapped: false
+
+galera_monitoring_user: monitoring
+galera_monitoring_user_password: "shai0zui8eeChu"
+
+# WARNING: This option is deprecated and will be removed in v12.0
+galera_gcache_size: 1024M
+
+galera_max_heap_table_size: 32M
+galera_tmp_table_size: 32M
+
+galera_file_limits: 32768
+galera_wait_timeout: 28800
+
+## innodb options
+galera_innodb_buffer_pool_size: 4096M
+galera_innodb_additional_mem_pool_size: 24M
+galera_innodb_log_file_size: 1024M
+galera_innodb_log_buffer_size: 128M
+
+## wsrep configuration (in inventory specify !)
+#galera_wsrep_address: "127.0.0.1"
+galera_wsrep_cluster_address: "{% for host in groups['mapr-galera'] %}{{ hostvars[host].ansible_default_ipv4.address }}{% if not loop.last %},{% endif %}{% endfor %}"
+galera_wsrep_slave_threads: "{{ ansible_processor_vcpus }}"
+galera_wsrep_retry_autocommit: 3
+galera_wsrep_debug: 0
+galera_wsrep_sst_method: xtrabackup-v2
+#galera_wsrep_sst_method: rsync
+galera_wsrep_provider_options:
+  - { option: "gcache.size", value: "{{ galera_gcache_size }}" }
+galera_wsrep_sst_auth_user: "sst-user"
+galera_wsrep_sst_auth_password: "Roog9ohchooKin"
+
+# xtrabackup parallel/compression/sync threads
+galera_xtrabackup_threads: 2
+
+
+# Galera slow/unindexed query logging
+galera_slow_query_logging: 0
+galera_unindexed_query_logging: 0
+
+
+# Set the max connections value for galera. Set this value to override the
+# computed value which is (100 x vCPUs). If computed, the lowest value throughout
+# the cluster will be used which is something to note if deploying galera on different
+# hardware.
+galera_max_connections: 800
