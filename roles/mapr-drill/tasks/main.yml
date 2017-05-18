@@ -31,9 +31,8 @@
 
 - name: MapR | Reconfigure.sh due to Drill installation
   command: /opt/mapr/server/configure.sh -R --isvm
-  notify: Restart Warden
+  notify: Restart Drill
 
-- meta: flush_handlers
 
 # TODO Not working with cli
 #- name: MapR | Add hive config.
