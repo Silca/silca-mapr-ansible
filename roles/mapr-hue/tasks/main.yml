@@ -62,20 +62,10 @@
   when: mapr_hue_version != "3.12.0"
   notify: Restart Warden
 
+- meta: flush_handlers
+
 - name: MapR | Hue | sync and migrate hue database
   shell: |
     source ./activate && ./hue syncdb --noinput && ./hue migrate
   args:
     chdir: "/opt/mapr/hue/hue-{{ mapr_hue_version }}/build/env/bin"
-
-- meta: flush_handlers
-
-- name: MapR | Hue | Restart Hue
-  command: maprcli node services -name hue -action restart -nodes {{ inventory_hostname }}
-  register: hue_service_state
-  retries: 5
-  delay: 20
-  until: "'hue is not configured on node' not in hue_service_state.stdout "
-
-- name: MapR | Hue | Wait for website
-  wait_for: port={{ hue.webserver_port }}
