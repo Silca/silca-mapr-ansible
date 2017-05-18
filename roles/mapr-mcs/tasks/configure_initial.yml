@@ -11,4 +11,4 @@
 
 - name: MapR | Mcs | Configure ssl-server.xml
   template: src=ssl-server.xml.j2 dest=/opt/mapr/hadoop/hadoop-{{ mapr_hadoop_version }}/etc/hadoop/ssl-server.xml backup=yes
-  notify: Restart Warden
+  notify: Restart MCS

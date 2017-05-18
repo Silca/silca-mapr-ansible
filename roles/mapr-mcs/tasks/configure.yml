@@ -69,4 +69,4 @@
 
 - name: MapR | Mcs | set ssl_stores owner
   file: path=/opt/mapr/conf/ssl_stores mode=0744 owner=mapr group=mapr state=directory recurse=yes
-  notify: Restart Warden
+  notify: Restart MCS
