@@ -6,11 +6,11 @@
 
 - name: "HAProxy | Suppress tmp store first to assemble"
   file: path=/tmp/ssl_stores state=absent
-  when: ("{{ inventory_hostname in groups['mapr-ha-node'] }}" ) and (hue_with_certificat == True )
+  when: hue_with_certificat
 
 - name: "HAProxy | Create tmp store first to assemble"
   file: path=/tmp/ssl_stores mode=0644 state=directory
-  when: ("{{ inventory_hostname in groups['mapr-ha-node'] }}" ) and (hue_with_certificat == True )
+  when: hue_with_certificat
 
 - name: "HAProxy | Copy mcs keys to remote"
   copy:
@@ -19,20 +19,20 @@
   with_items:
     - hue.key
     - hue.pem
-  when: ("{{ inventory_hostname in groups['mapr-ha-node'] }}" ) and (hue_with_certificat == True )
+  when: hue_with_certificat
 
 - name: "HAProxy | Certificat and key concatenation"
   assemble:
     src=/tmp/ssl_stores
     dest=/etc/haproxy/hue.keypem
-  when: ("{{ inventory_hostname in groups['mapr-ha-node'] }}" ) and (hue_with_certificat == True )
+  when: hue_with_certificat
 
 - name: "HAProxy | Assign variable bind for haproxy.cfg"
   set_fact:
       haproxy_bind_parameter: "ssl crt /etc/haproxy/hue.keypem"
-  when: ("{{ inventory_hostname in groups['mapr-ha-node'] }}" ) and (hue_with_certificat == True )
+  when: hue_with_certificat
 
 - name: "HAProxy | Assign variable ssl-check for haproxy.cfg"
   set_fact:
       haproxy_ssl_check_parameter: "ssl verify none"
-  when: ("{{ inventory_hostname in groups['mapr-ha-node'] }}" ) and (hue_with_certificat == True )
+  when: hue_with_certificat
