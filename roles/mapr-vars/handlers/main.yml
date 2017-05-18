@@ -38,3 +38,12 @@
     - { name : "javac", path: "/usr/lib/jvm/java-1.8.0-openjdk.x86_64/bin/javac"}
   tags: alternatives
 
+
+- name: Restart Drill
+  command: maprcli node services -action restart -name drill-bits -nodes {{ inventory_hostname }}
+
+- name: Restart Hue
+  command: maprcli node services -action restart -name hue -nodes {{ inventory_hostname }}
+
+- name: Restart MCS
+  command: maprcli node services -action restart -name webserver -nodes {{ inventory_hostname }}
