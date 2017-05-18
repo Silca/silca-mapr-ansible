@@ -20,7 +20,7 @@
   template: src=sqoop.properties.MEP1 dest="/opt/mapr/sqoop/sqoop-{{ mapr_sqoop2_version }}/server/conf/sqoop.properties" owner=mapr group=mapr
   when:  mapr_mep | major == '1'
 
-- name: MapR | Sqoop2 | Templatize Sqoop server configuration for Ecosystem 2.0.0
+- name: MapR | Sqoop2 | Templatize Sqoop server configuration for Ecosystem 2.0.0+
   template: src=sqoop.properties.MEP2+ dest="/opt/mapr/sqoop/sqoop-{{ mapr_sqoop2_version }}/conf/sqoop.properties" owner=mapr group=mapr
   when:  mapr_mep | major != '1'
 
