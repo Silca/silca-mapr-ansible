@@ -1,3 +1,5 @@
+# {{ ansible_managed }}
+
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -16,17 +18,21 @@
 DRILL_MAX_DIRECT_MEMORY="8G"
 DRILL_HEAP="4G"
 
-export DRILL_JAVA_OPTS="-Xms$DRILL_HEAP -Xmx$DRILL_HEAP -XX:MaxDirectMemorySize=$DRILL_MAX_DIRECT_MEMORY -XX:MaxPermSize=512M -XX:ReservedCodeCacheSize=1G -Ddrill.exec.enable-epoll=true"
+export DRILL_JAVA_OPTS="-Djava.net.preferIPv4Stack=true -Xms$DRILL_HEAP -Xmx$DRILL_HEAP -XX:MaxDirectMemorySize=$DRILL_MAX_DIRECT_MEMORY -XX:MaxPermSize=512M -XX:ReservedCodeCacheSize=1G -Ddrill.exec.enable-epoll=true"
 
 # Class unloading is disabled by default in Java 7
 # http://hg.openjdk.java.net/jdk7u/jdk7u60/hotspot/file/tip/src/share/vm/runtime/globals.hpp#l1622
 export SERVER_GC_OPTS="-XX:+CMSClassUnloadingEnabled -XX:+UseG1GC "
 
 export DRILL_JAVA_OPTS="$DRILL_JAVA_OPTS -Djava.security.auth.login.config=/opt/mapr/conf/mapr.login.conf -Dzookeeper.sasl.client=false "
-
 export DRILL_LOG_DIR="/opt/mapr/drill/drill-{{ mapr_drill_version }}/logs"
 
 export MAPR_IMPERSONATION_ENABLED=true
 export MAPR_TICKETFILE_LOCATION=/opt/mapr/conf/mapruserticket
 
 export DRILLBIT_JAVA_OPTS="-Djava.library.path=/opt/jpam/JPam-1.1/"
+
+#BUG: drill 1.10
+{% if mapr_drill_version == '1.10.0' %}
+export SQLLINE_JAVA_OPTS="-XX:MaxPermSize=512M -Djava.security.auth.login.config=/opt/mapr/conf/mapr.login.conf  -Dzookeeper.sasl.client=false -Dhadoop.login=hybrid"
+{% endif %}
