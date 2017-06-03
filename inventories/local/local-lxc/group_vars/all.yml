@@ -1,4 +1,8 @@
 ---
+
+dns_subdomain: bigdata
+
+
 mapr_release_version: 5.2.1
 mapr_mep: 3.0.0
 
