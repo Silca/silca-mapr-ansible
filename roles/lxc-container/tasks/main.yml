@@ -8,11 +8,6 @@
     force_stop: true
     state: absent
 
-- name: LXD | Delete zvolume
-  delegate_to: localhost
-  command: zfs destroy lxd/{{ inventory_hostname }}
-  ignore_errors: true
-
 - name: LXD | Create container
   delegate_to: localhost
   become: true
@@ -27,18 +22,13 @@
     state: started
     wait_for_ipv4_addresses: true
     config:
-      limits.cpu: "{{ lxd_cpus_pin }}"
       limits.memory: "{{ lxd_memory }}"
       security.privileged: "true"
       raw.apparmor: "mount fstype=nfs,"
 
-- name: LXD | Create zvolume
+- name: LXC | Add private public interface
   delegate_to: localhost
-  command: zfs create -V 30G lxd/{{ inventory_hostname }} creates=/dev/zvol/lxd/{{ inventory_hostname }}
-
-- name: LXD | Add volume
-  delegate_to: localhost
-  command: lxc config device add {{ inventory_hostname }} volto-{{ inventory_hostname }} unix-block path=/dev/zvol/lxd/{{ inventory_hostname }}
+  command: lxc config device add {{ inventory_hostname}} eth0 nic nictype=bridged parent=lxd-public name=eth0
 
 - name: LXC | Add private network interface
   delegate_to: localhost
@@ -52,6 +42,24 @@
   lxd_container:
     name: "{{ inventory_hostname }}"
     state: restarted
+    wait_for_ipv4_addresses: true
+
+- action: setup
+
+- name: LXD | Add wilcard dns entry for swarm nodes
+  become: true
+  delegate_to: localhost
+  lineinfile: create=yes dest="/etc/NetworkManager/dnsmasq.d/mapr_{{ inventory_hostname }}" regexp="address=/{{ inventory_hostname }}" line="address=/{{ inventory_hostname }}.{{ dns_subdomain }}.{{ dns_domain }}/{{ ansible_default_ipv4.address }}"
+  notify: Restart Network Manager
+  tags: dnsmasq
+
+- name: LXD | NetworkManager | Activate local dnsmasq
+  become: true
+  delegate_to: localhost
+  run_once: true
+  template: src=network_manager.conf dest=/etc/NetworkManager/conf.d/dns.conf owner=root group=root mode=0755
+  notify: Restart Network Manager
+  tags: dnsmasq
 
 - name: LXD | Domain | Configure Yum.conf
   template: src=etc_yum.conf.j2 dest=/etc/yum.conf owner=root group=root mode=0755
