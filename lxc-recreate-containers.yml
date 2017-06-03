@@ -1,6 +1,11 @@
 - hosts: localhost
   gather_facts: yes
   tasks:
+    - name: Install Python netaddr lib
+      become: true
+      package: name=python-netaddr state=latest
+      tags: localhost-pre-requisite
+
     - name: Registering localhost ip for configuring squid url inside lxc containers
       action: setup
 
