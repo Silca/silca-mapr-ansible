@@ -1,0 +1,6 @@
+
+- name: Restart Network Manager
+  delegate_to: localhost
+  run_once: true
+  become: true
+  service: name=NetworkManager state=restarted
