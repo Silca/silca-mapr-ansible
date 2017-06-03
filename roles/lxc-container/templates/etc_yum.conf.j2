@@ -11,7 +11,7 @@ installonly_limit=5
 bugtracker_url=http://bugs.centos.org/set_project.php?project_id=19&ref=http://bugs.centos.org/bug_report_page.php?category=yum
 distroverpkg=centos-release
 {% if yum_with_proxy %}
-proxy={{ lxd_http_proxy }}
+proxy={{ http_proxy }}
 {% endif %}
 
 #  This is the default, if you make this bigger yum won't see if the metadata
