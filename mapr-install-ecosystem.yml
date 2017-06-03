@@ -92,12 +92,6 @@
   roles:
     - { role: mapr-rstudio, tags: [ mapr-install-rstudio ] }
 
-- hosts: mapr-kafka
-  serial: "100%"
-  roles:
-    - { role: add-extra-groupvars, tags: [ add-extra-groupvars ] }
-    - { role: mapr-kafka, when: install_kafka , tags: [ mapr-install-kafka ]}
-
 - hosts: mapr-node
   roles:
     - { role: mapr-monitoring, when: mapr_release_version != '5.1.0', tags: [ mapr-install-monitoring ]}
