@@ -11,7 +11,7 @@ yum_with_proxy: true
 # Http proxy endpoint
 http_proxy_host: "{{ ansible_default_ipv4.gateway }}"
 http_proxy_port: 3148
-http_proxy: "http://{{ bridge_ip }}:{{ http_proxy_port }}"
+http_proxy: "http://{{ http_proxy_host }}:{{ http_proxy_port }}"
 https_proxy: "{{ http_proxy }}"
 
 # Used if yum_with_proxy = true
