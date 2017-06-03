@@ -124,16 +124,10 @@
 - name: MapR | Create a data directory
   file: path=/data state=directory owner=root
 
-#FIXME To delete Work only for lxc not on ZFS
-#- name: MapR | Create a disk index file for MapR
-#  command: fallocate -l 40G {{ item }} creates="{{ item }}"
-#  with_items: "{{ mapr_maprfs_volumes }}"
-#  when: platform == 'lxc'
+- name: MapR | Create a disk index file for MapR ( 2x40G == 'BigData' ?!?!!)
+  command: fallocate -l 40G {{ item }} creates="{{ item }}"
+  with_items: "{{ mapr_maprfs_volumes }}"
+  when: platform == 'lxc'
 
 - name: MapR | Templatize tmp_disks.txt.j2
   template: src=tmp_disks.txt.j2 dest=/tmp/disks.txt owner=root group=root mode=0755
-  when: platform != 'lxc'
-
-- name: MapR | Templatize tmp_disks.txt.j2
-  template: src=tmp_disks_lxc.txt.j2 dest=/tmp/disks.txt owner=root group=root mode=0755
-  when:  platform == 'lxc'
