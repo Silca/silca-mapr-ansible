@@ -46,7 +46,7 @@
 
 - hosts: mapr-node
   any_errors_fatal: true
-  serial: "{{ rolling_update | default(false) |ternary('30%', '100%') }}"
+  serial: "100%"
   roles:
     - { role: common, tags: [ common ] }
     - { role: mapr-base-install, tags: [ mapr-install-base ] }
@@ -63,7 +63,7 @@
 
 - hosts: mapr-node
   any_errors_fatal: true
-  serial: "{{ rolling_update | default(false) | ternary('30%', '100%') }}"
+  serial: "100%"
   roles:
     - { role: mapr-base-nfs, when: licence_type != 'trial', tags: [ mapr-install-nfs ] }
     - { role: mapr-base-postinstall, tags: [ mapr-post-install ] }
