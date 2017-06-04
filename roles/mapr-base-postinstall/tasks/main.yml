@@ -3,11 +3,6 @@
   when:  inventory_hostname in groups['mapr-zookeeper']
   tags: package
 
-- name: Mapr | Remove /proc/sys/kernel/core_pattern ( coresDir ) reference for containers
-  lineinfile: dest=/opt/mapr/initscripts/mapr-warden regexp="coresDir=.*dirname" line="coresDir=/tmp"
-  when: platform == 'lxc'
-  tags: coress
-
 - name: MapR | Post Install | Start warden before applying post installation
   service: name=mapr-warden state=restarted
 

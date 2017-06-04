@@ -4,6 +4,23 @@
     - { begin: "export JAVA_HOME", line: "export JAVA_HOME=/usr/lib/jvm/java" }
     - { begin: "export MAPR_SUBNETS", line: "export MAPR_SUBNETS={{ mapr_internal_subnet }}" }
 
+- name: Mapr | Remove /proc/sys/kernel/core_pattern ( coresDir ) reference for containers
+  replace: dest={{ item }} regexp="/proc/sys/kernel/core_pattern" replace="/tmp/core_pattern"
+  with_items:
+    - /opt/mapr/server/configure-common.sh
+    - /opt/mapr/support/tools/mapr-support-dump.sh
+    - /opt/mapr/initscripts/mapr-warden
+    - /opt/mapr/initscripts/mapr-gateway
+    - /opt/mapr/initscripts/mapr-cldb
+  when: platform == 'lxc'
+  tags: coress
+
+- name: Mapr | Create core_pattern for containers
+  file: dest=/tmp/core_pattern state=touch mode=0775
+  when: platform == 'lxc'
+  tags: coress
+
+
 - name: MapR | Configure.sh
   command: /opt/mapr/server/configure.sh -C {{ cldb.urls }} -Z {{ zookeeper.urls }} -HS {{ historyserver.urls }} -N {{ mapr.cluster_name }} --isvm
 
