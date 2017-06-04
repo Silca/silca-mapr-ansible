@@ -20,7 +20,7 @@
 - name: Check Mapr nfs mount using nfs mount (basic and premium)
   command: ls /mapr/
   register: nfs_result
-  until: nfs_result.stdout.find('{{ mapr.cluster_name }}') != -1
+  until: nfs_result.stdout.find(mapr.cluster_name) != -1
   retries: 30
   when: licence_type != 'basic' and inventory_hostname in groups['mapr-node']
 

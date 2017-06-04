@@ -13,14 +13,14 @@
 # FIXME: check
 - name: MySQL Dump | Dump databases from ha node master
   mysql_db: state=dump name=all target="{{ mysql_dump_directory }}/{{ mysql_dump_file_name }}" login_unix_socket="{{ mysql_login_unix_socket }}"
-  when: "{{ inventory_hostname == groups['mapr-ha-node'][0] }}"
+  when: inventory_hostname == groups['mapr-ha-node'][0]
 
 - name: MySQL Dump | Fetch dump from master
   fetch:
     src: "{{ mysql_dump_directory }}/{{ mysql_dump_file_name }}"
     dest: "/tmp/{{ mysql_dump_file_name }}"
     flat: yes
-  when: "{{ inventory_hostname == groups['mapr-ha-node'][0] }}"
+  when: inventory_hostname == groups['mapr-ha-node'][0]
 
 - name: MySQL Dump | Copy dump backup directory
   copy:
@@ -29,4 +29,4 @@
     owner: root
     group: root
     mode: 0755
-  when: "{{ groups['mapr-ha-node'] }}"
+  when: inventory_hostname in groups['mapr-ha-node']

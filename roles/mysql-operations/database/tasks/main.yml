@@ -10,4 +10,4 @@
   shell: mysql --database {{ mysql_db }} -u root -e "select 123;"
   with_items: "{{ groups['mapr-ha-node'] }}"
   register: command_result
-  failed_when: "{{ '123' not in command_result.stdout_lines }}"
+  failed_when: command_result.stdout.find('123') == -1
