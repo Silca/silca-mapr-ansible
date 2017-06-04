@@ -7,14 +7,20 @@
   when:  inventory_hostname in groups['mapr-zookeeper']
   tags: package
 
-- name: MapR | Core | Remove previous patches Mapr
+- name: MapR | Patches | Remove previous patches Mapr
   package: pkg=mapr-patch-{{ mapr_release_version | major_minor_patches }}* state=absent
   when:  inventory_hostname in groups['mapr-node']
   tags: package
 
-- name: MapR | Core | Install patches Mapr
+- name: MapR | Patches | Install patches Mapr
   package: pkg=mapr-patch-{{ mapr_release_version | major_minor_patches }}* state=latest
   when:  inventory_hostname in groups['mapr-node']
   notify: Restart Warden
   tags: package
 
+- name: MapR | Patches | Start Zookeeper
+  service: name=mapr-zookeeper state=started
+  when:  inventory_hostname in groups['mapr-zookeeper']
+
+- name: MapR | Patches | Start warden after applying patches
+  service: name=mapr-warden state=started
