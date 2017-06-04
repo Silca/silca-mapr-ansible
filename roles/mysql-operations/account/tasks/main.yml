@@ -53,7 +53,7 @@
   with_nested:
     - "{{ ['localhost'] | union(groups['mapr-node']) | union(groups['mapr-ha-node'])}}"
     - ["", ".{{ domain | default('local') }}"]
-  when: "{{ (groups['mapr-galera'] | length == 0 ) and  groups['mapr-ha-node'] | length > 1 }}"
+  when: (groups['mapr-galera'] | length == 0 ) and  groups['mapr-ha-node'] | length > 1
 
 - name: "MapR | MySQL | Create  addionnal MySQL accounts on Slave"
   run_once: true
@@ -67,7 +67,7 @@
     state: present
     login_unix_socket: "{{ mysql_login_unix_socket }}"
   with_items: "{{ groups['mapr-node'] | union(groups['mapr-ha-node'])}}"
-  when: "{{ (groups['mapr-galera'] | length == 0 ) and  groups['mapr-ha-node'] | length > 1 }}"
+  when: ( groups['mapr-galera'] | length == 0 ) and  groups['mapr-ha-node'] | length > 1
 
 - name: "MapR | MySQL | Create  additionnal MySQL accounts"
   run_once: true
@@ -80,13 +80,13 @@
     host: "{{ item }}"
     state: present
   with_items: "{{ mysql_additionnal_hosts }}"
-  when: "{{ groups['mapr-ha-node'] | length > 1 }}"
+  when: groups['mapr-ha-node'] | length > 1
 
 - name: "MapR | MySQL | Check from client host mysql with the user \"{{ mysql_user }}\" (database: \"{{ mysql_db }}\")"
   shell: mysql --database {{ mysql_db }} -h {{ item }} -u {{ mysql_user }} -p{{ mysql_passwd }} -e "select 123;"
   delegate_to: "{{ item }}"
   register: command_result
-  failed_when: "{{ '123' not in command_result.stdout_lines }}"
+  failed_when: command_result.stdout.find('123') == -1
   with_items: "{{ groups['mapr-ha-node'] }}"
 
 
